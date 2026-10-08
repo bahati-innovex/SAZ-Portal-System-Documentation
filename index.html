@@ -1,0 +1,897 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+</head>
+<body>
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#faf9f5;color:#141413}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>SAZ Portal Reference</title>
+<meta name="description" content="SAZ Portal system documentation: a plain-language account of how the portal works, who uses it, what it sells, and where it is going next, with technical detail kept to a reference appendix.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+<style>
+:root{
+  --ink:#1c2430; --ink-soft:#525c6b; --muted:#7a8291;
+  --paper:#f6f5f1; --surface:#ffffff; --sunken:#efede7;
+  --line:#dedad0; --accent:#2f6f62; --accent-soft:#e3ece8;
+  --gold:#9c6d27; --gold-soft:#f3e8d4; --danger:#9a3b32; --danger-soft:#f5e3e0;
+  --side-w:280px; --top-h:56px;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --ink:#e9e6dd; --ink-soft:#aaa59a; --muted:#858075;
+    --paper:#14171b; --surface:#1b1f24; --sunken:#111418;
+    --line:#2f343b; --accent:#72b5a2; --accent-soft:#1e302b;
+    --gold:#d3a15c; --gold-soft:#30281a; --danger:#dd9084; --danger-soft:#38221f;
+  }
+}
+:root[data-theme="dark"]{
+  --ink:#e9e6dd; --ink-soft:#aaa59a; --muted:#858075;
+  --paper:#14171b; --surface:#1b1f24; --sunken:#111418;
+  --line:#2f343b; --accent:#72b5a2; --accent-soft:#1e302b;
+  --gold:#d3a15c; --gold-soft:#30281a; --danger:#dd9084; --danger-soft:#38221f;
+}
+*{box-sizing:border-box;}
+body{margin:0; background:var(--paper); color:var(--ink); font:15px/1.65 "IBM Plex Sans",system-ui,sans-serif;}
+code,.mono{font-family:"IBM Plex Mono",ui-monospace,monospace; font-size:.86em;}
+a{color:var(--accent);}
+:focus-visible{outline:2px solid var(--accent); outline-offset:2px;}
+
+/* ---------- top bar ---------- */
+.topbar{
+  position:sticky; top:0; z-index:5; height:var(--top-h);
+  display:flex; align-items:center; gap:14px; padding:0 20px;
+  background:var(--surface); border-bottom:1px solid var(--line);
+}
+.brand{font-weight:600; font-size:14.5px; display:flex; align-items:center; gap:10px; min-width:0;}
+.brand .mark{width:26px; height:26px; border-radius:6px; background:var(--accent); color:var(--surface); display:grid; place-items:center; font:600 12px "IBM Plex Mono",monospace; flex:none;}
+.brand .sub{color:var(--muted); font-weight:400; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+.ver{font:500 11px "IBM Plex Mono",monospace; color:var(--accent); background:var(--accent-soft); padding:2px 8px; border-radius:999px; white-space:nowrap;}
+.spacer{flex:1;}
+.btn{
+  font:500 13px "IBM Plex Sans",sans-serif; display:inline-flex; align-items:center; gap:8px;
+  padding:8px 14px; border-radius:8px; border:1px solid var(--accent);
+  background:var(--accent); color:var(--surface); cursor:pointer; white-space:nowrap;
+}
+.btn:hover{filter:brightness(1.08);}
+.btn[disabled]{opacity:.55; cursor:not-allowed;}
+.btn svg{width:15px; height:15px;}
+.btn-status{font-size:12px; color:var(--muted); white-space:nowrap;}
+.menu-btn{display:none; background:none; border:1px solid var(--line); color:var(--ink); border-radius:8px; padding:6px 10px; font:500 13px "IBM Plex Sans",sans-serif; cursor:pointer;}
+
+/* ---------- layout ---------- */
+.wrap{display:grid; grid-template-columns:var(--side-w) minmax(0,1fr);}
+.side{
+  position:sticky; top:var(--top-h); height:calc(100vh - var(--top-h)); overflow-y:auto;
+  border-right:1px solid var(--line); background:var(--surface); padding:18px 12px 40px;
+}
+.side .grp{font:500 10.5px "IBM Plex Mono",monospace; text-transform:uppercase; letter-spacing:.07em; color:var(--muted); padding:14px 10px 6px;}
+.side .grp:first-child{padding-top:0;}
+.side a{display:flex; gap:8px; text-decoration:none; color:var(--ink-soft); font-size:13.5px; padding:5px 10px; border-radius:6px; line-height:1.4;}
+.side a .n{font:12px "IBM Plex Mono",monospace; color:var(--muted); min-width:2.2em;}
+.side a.l3{padding-left:22px; font-size:12.8px;}
+.side a:hover{background:var(--sunken); color:var(--ink);}
+.side a.active{background:var(--accent-soft); color:var(--accent); font-weight:500;}
+.side a.active .n{color:var(--accent);}
+main{padding:40px 48px 120px; min-width:0;}
+.doc{max-width:820px; margin:0 auto;}
+@media (max-width:900px){
+  .wrap{grid-template-columns:1fr;}
+  .side{position:fixed; left:0; top:var(--top-h); width:min(320px,86vw); z-index:4; transform:translateX(-100%); transition:transform .2s; box-shadow:0 10px 30px rgba(0,0,0,.18);}
+  .side.open{transform:none;}
+  .menu-btn{display:inline-block;}
+  main{padding:28px 18px 100px;}
+  .brand .sub{display:none;}
+}
+@media (prefers-reduced-motion: reduce){.side{transition:none;}}
+
+/* ---------- document typography ---------- */
+.doc h1{font:600 clamp(30px,5vw,44px)/1.12 "Fraunces",Georgia,serif; margin:0; text-wrap:balance;}
+.doc h2{font:600 26px/1.25 "IBM Plex Sans",sans-serif; margin:0 0 6px; text-wrap:balance; scroll-margin-top:calc(var(--top-h) + 16px);}
+.doc h2 .n{color:var(--gold); font:500 15px "IBM Plex Mono",monospace; display:block; margin-bottom:6px; letter-spacing:.04em;}
+.doc h3{font:600 18px/1.35 "IBM Plex Sans",sans-serif; margin:34px 0 8px; scroll-margin-top:calc(var(--top-h) + 16px);}
+.doc h3 .n{color:var(--muted); font:500 14px "IBM Plex Mono",monospace; margin-right:10px;}
+.doc h4{font:600 15px "IBM Plex Sans",sans-serif; margin:22px 0 6px;}
+.doc p{margin:0 0 12px; max-width:72ch;}
+.doc ul,.doc ol{margin:0 0 14px; padding-left:22px; max-width:72ch;}
+.doc li{margin-bottom:4px;}
+.chapter{padding-top:56px; margin-top:56px; border-top:1px solid var(--line);}
+.chapter.first{border-top:none; margin-top:0; padding-top:0;}
+.lede{font-size:16px; color:var(--ink-soft);}
+
+/* title page & front matter */
+.titlepage{padding:12px 0 40px;}
+.titlepage .kicker{font:500 12px "IBM Plex Mono",monospace; letter-spacing:.09em; text-transform:uppercase; color:var(--accent); margin-bottom:16px;}
+.titlepage .subtitle{font-size:18px; color:var(--ink-soft); margin:14px 0 30px; max-width:58ch;}
+.meta-grid{display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); border:1px solid var(--line); border-radius:10px; background:var(--surface); overflow:hidden;}
+.meta-grid div{padding:12px 14px; border-right:1px solid var(--line);}
+.meta-grid div:last-child{border-right:none;}
+.meta-grid dt{font:500 10.5px "IBM Plex Mono",monospace; text-transform:uppercase; letter-spacing:.06em; color:var(--muted);}
+.meta-grid dd{margin:3px 0 0; font-weight:500; font-size:14px;}
+@media (max-width:640px){.meta-grid{grid-template-columns:1fr 1fr;} .meta-grid div:nth-child(2){border-right:none;} .meta-grid div:nth-child(-n+2){border-bottom:1px solid var(--line);}}
+
+.toc{border:1px solid var(--line); border-radius:10px; background:var(--surface); padding:20px 24px;}
+.toc ol{list-style:none; padding:0; margin:0; max-width:none;}
+.toc > ol > li{margin:10px 0 0; font-weight:600;}
+.toc > ol > li:first-child{margin-top:0;}
+.toc li li{font-weight:400; margin:3px 0 0 30px; font-size:14px;}
+.toc a{color:var(--ink); text-decoration:none; display:flex; gap:10px;}
+.toc a:hover{color:var(--accent);}
+.toc .n{font-family:"IBM Plex Mono",monospace; color:var(--gold); min-width:2.4em; font-size:.9em;}
+.toc li li .n{color:var(--muted);}
+
+/* tables, captions, callouts */
+.tbl{overflow-x:auto; border:1px solid var(--line); border-radius:10px; background:var(--surface); margin:14px 0 6px;}
+table{width:100%; border-collapse:collapse; font-size:13.8px;}
+.tbl table{min-width:560px;}
+th{text-align:left; font:500 10.5px "IBM Plex Mono",monospace; text-transform:uppercase; letter-spacing:.05em; color:var(--muted); background:var(--sunken); padding:9px 12px; border-bottom:1px solid var(--line); white-space:nowrap;}
+td{padding:10px 12px; border-bottom:1px solid var(--line); vertical-align:top;}
+tr:last-child td{border-bottom:none;}
+td.code{font-family:"IBM Plex Mono",monospace; font-size:12.5px; line-height:1.7;}
+.caption{font-size:12.5px; color:var(--muted); margin:0 0 20px; font-style:italic;}
+.caption b{font-style:normal; color:var(--ink-soft); font-weight:600;}
+.pill{display:inline-block; font:500 11px "IBM Plex Mono",monospace; padding:2px 8px; border-radius:999px; background:var(--accent-soft); color:var(--accent); white-space:nowrap; margin:1px 2px 1px 0;}
+.pill.gold{background:var(--gold-soft); color:var(--gold);}
+.pill.red{background:var(--danger-soft); color:var(--danger);}
+.m{display:inline-block; font:600 10px "IBM Plex Mono",monospace; padding:1px 6px; border-radius:4px; margin-right:6px; vertical-align:1px; background:var(--accent-soft); color:var(--accent);}
+.m.get{background:var(--gold-soft); color:var(--gold);}
+.callout{border:1px solid var(--line); border-left:3px solid var(--accent); background:var(--surface); border-radius:0 10px 10px 0; padding:12px 16px; margin:16px 0; font-size:14px; max-width:72ch;}
+.callout.warn{border-left-color:var(--gold);}
+.callout b:first-child{display:block; font-size:12px; font-family:"IBM Plex Mono",monospace; text-transform:uppercase; letter-spacing:.05em; color:var(--accent); margin-bottom:4px;}
+.callout.warn b:first-child{color:var(--gold);}
+
+/* process steps */
+.steps{list-style:none; padding:0; margin:14px 0 20px; counter-reset:s; max-width:72ch;}
+.steps li{counter-increment:s; position:relative; padding:0 0 16px 42px; margin:0;}
+.steps li::before{content:counter(s); position:absolute; left:0; top:0; width:26px; height:26px; border-radius:50%; border:1px solid var(--accent); color:var(--accent); background:var(--surface); font:500 12px/24px "IBM Plex Mono",monospace; text-align:center;}
+.steps li::after{content:""; position:absolute; left:13px; top:28px; bottom:2px; width:1px; background:var(--line);}
+.steps li:last-child::after{display:none;}
+.steps b{display:block;}
+.steps span{color:var(--ink-soft); font-size:14px;}
+
+/* architecture figure */
+.arch{display:grid; grid-template-columns:1fr auto 1.25fr auto 1.4fr; gap:10px; align-items:center; border:1px solid var(--line); border-radius:10px; background:var(--surface); padding:18px; margin:14px 0 6px;}
+.arch .col{display:grid; gap:8px;}
+.arch .box{border:1px solid var(--line); border-radius:8px; padding:8px 10px; background:var(--paper); font-size:12.8px; line-height:1.4;}
+.arch .box b{display:block; font-size:13px;}
+.arch .box small{color:var(--muted); font-family:"IBM Plex Mono",monospace; font-size:11px;}
+.arch .box.core{border-color:var(--accent); background:var(--accent-soft);}
+.arch .box.gw{border-color:var(--gold);}
+.arch .arrow{color:var(--muted); font:16px "IBM Plex Mono",monospace;}
+.arch .lbl{font:500 10px "IBM Plex Mono",monospace; text-transform:uppercase; letter-spacing:.06em; color:var(--muted);}
+@media (max-width:760px){.arch{grid-template-columns:1fr;} .arch .arrow{transform:rotate(90deg); justify-self:center;}}
+
+.timeline{border-left:1px solid var(--line); margin:14px 0 20px 6px; padding-left:22px; max-width:72ch;}
+.timeline .t{position:relative; margin-bottom:18px;}
+.timeline .t::before{content:""; position:absolute; left:-27px; top:7px; width:9px; height:9px; border-radius:50%; background:var(--accent);}
+.timeline .t.flight::before{background:var(--surface); border:1px dashed var(--muted);}
+.timeline .when{font:500 12px "IBM Plex Mono",monospace; color:var(--gold);}
+.timeline b{display:block;}
+.timeline p,.timeline ul{font-size:14px; color:var(--ink-soft); margin:2px 0 0;}
+
+.foot{margin-top:70px; padding-top:18px; border-top:1px solid var(--line); font:12px "IBM Plex Mono",monospace; color:var(--muted);}
+
+/* ---------- PDF rendering (forced light, print scale) ---------- */
+.pdf-root{
+  --ink:#1c2430; --ink-soft:#4b5566; --muted:#6e7684; --paper:#f6f5f1; --surface:#ffffff; --sunken:#f1efe9;
+  --line:#d9d4c8; --accent:#2f6f62; --accent-soft:#e3ece8; --gold:#9c6d27; --gold-soft:#f3e8d4; --danger:#9a3b32; --danger-soft:#f5e3e0;
+  background:#fff; color:var(--ink); font:11.5px/1.6 "IBM Plex Sans",sans-serif; width:182mm;
+}
+.pdf-root .chapter{border-top:none; margin-top:0; padding-top:0;}
+.pdf-root .doc h2{font-size:21px;}
+.pdf-root .doc h3{font-size:14.5px; margin-top:22px;}
+.pdf-root .doc p,.pdf-root .doc ul,.pdf-root .steps,.pdf-root .callout,.pdf-root .timeline{max-width:none;}
+.pdf-root table{font-size:10.5px;}
+.pdf-root .tbl table{min-width:0;}
+.pdf-root .tbl{overflow:visible;}
+.pdf-root td.code{font-size:9.5px;}
+.pdf-root .arch{grid-template-columns:1fr auto 1.25fr auto 1.4fr;}
+.pdf-root .arch .arrow{transform:none;}
+.pdf-root .titlepage{padding-top:60mm;}
+.pdf-root .titlepage h1{font-size:34px;}
+.pdf-root .meta-grid{grid-template-columns:repeat(4,1fr);}
+.pdf-root .meta-grid div{border-right:1px solid var(--line); border-bottom:none;}
+.pdf-root .meta-grid div:last-child{border-right:none;}
+.pdf-root [data-no-pdf]{display:none!important;}
+.pdf-root .toc li li{margin-left:26px;}
+</style>
+
+<header class="topbar">
+  <button class="menu-btn" id="menuBtn" type="button" aria-expanded="false" aria-controls="side">Contents</button>
+  <div class="brand"><span class="mark">SAZ</span><span>SAZ Portal</span><span class="sub">&middot; System Documentation</span></div>
+  <span class="ver">v1.2 &middot; Oct 2026</span>
+  <div class="spacer"></div>
+  <span class="btn-status" id="pdfStatus" aria-live="polite"></span>
+  <button class="btn" id="pdfBtn" type="button">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M5 21h14"/></svg>
+    Download PDF
+  </button>
+</header>
+
+<div class="wrap">
+  <nav class="side" id="side" aria-label="Document contents"></nav>
+
+  <main>
+  <article class="doc" id="doc">
+
+    <section class="part titlepage" id="title">
+      <div class="kicker">Sanlam Allianz Kenya &middot; Group Technology &amp; Innovation</div>
+      <h1>SAZ Portal: System Documentation</h1>
+      <p class="subtitle">A plain-language account of the SAZ digital insurance portal: who uses it, what it sells, how a sale happens from first quote to delivered policy, how it is paid for, who it talks to outside the business, what it has delivered, and what comes next. Technical detail for IT teams is kept in a reference appendix at the end.</p>
+      <dl class="meta-grid">
+        <div><dt>Version</dt><dd>1.2</dd></div>
+        <div><dt>Date</dt><dd>07 Oct 2026</dd></div>
+        <div><dt>Status</dt><dd>Final</dd></div>
+        <div><dt>Classification</dt><dd>Internal</dd></div>
+      </dl>
+    </section>
+
+    <section class="part chapter" id="front">
+      <h2 data-toc="Abstract"><span class="n">Front matter</span>Abstract</h2>
+      <p>The SAZ Portal is Sanlam Allianz Kenya's web platform for selling and servicing general insurance. It went live on 11 December 2025 as a Motor agency sales tool and now carries two full product lines, Motor and Personal Accident, from quotation through payment, regulatory certification and policy document delivery.</p>
+      <p>This document records what the system does today, written for a general business reader rather than a technical one. It was compiled directly from the portal's own program code and its engineering records, and from the programme's delivery register, so every claim in it traces back to something that has actually been built. Chapter 1 sets out scope and terms. Chapters 2 to 8 describe the system. Chapter 9 records what has been delivered, and Chapter 10 states current limitations and the planned roadmap. A technical reference appendix follows, for IT and integration teams only.</p>
+
+      <h3 id="doc-control"><span class="n">&nbsp;</span>Document control</h3>
+      <div class="tbl"><table>
+        <tr><th>Version</th><th>Date</th><th>Change</th></tr>
+        <tr><td>1.0</td><td>11 Sep 2026</td><td>Executive briefing: capability, delivery timeline, roadmap</td></tr>
+        <tr><td>1.1</td><td>07 Oct 2026</td><td>Restructured as full system documentation; added architecture, integrations and route reference</td></tr>
+        <tr><td>1.2</td><td>07 Oct 2026</td><td>Rewritten for a non-technical audience; technical detail moved into a reference appendix</td></tr>
+      </table></div>
+    </section>
+
+    <section class="part chapter" id="contents" data-no-nav>
+      <h2><span class="n">Front matter</span>Table of contents</h2>
+      <nav class="toc" id="toc" aria-label="Table of contents"></nav>
+    </section>
+
+    <!-- ===== 1 ===== -->
+    <section class="part chapter" id="ch1">
+      <h2><span class="n">Chapter 1</span>Introduction</h2>
+
+      <h3 id="s1-1"><span class="n">1.1</span>Background</h3>
+      <p>Before the portal existed, Motor insurance was quoted and arranged by hand, with underwriting steps completed manually and the sale recorded directly in Sanlam Allianz's core insurance system, Premia. The portal moves that whole experience online, for agents, bank and broker partners, and members of the public buying directly. In one sitting, it works out the price, takes payment over M-Pesa, issues the official motor certificate required by the industry regulator, records the sale in Premia, and emails the client every document they need.</p>
+
+      <h3 id="s1-2"><span class="n">1.2</span>Purpose and scope</h3>
+      <p>This document describes what the system does today. Anything still being built is described only in Chapter 10, and is always clearly marked as planned rather than delivered. The document covers:</p>
+      <ul>
+        <li>How the system is put together, in outline</li>
+        <li>Who uses it, and what each type of user is allowed to do</li>
+        <li>What it sells, and the options available for each product</li>
+        <li>How a sale actually happens, from first quote to delivered policy, for both Motor and Personal Accident, including renewals and direct public sales</li>
+        <li>How clients pay, and how that money is tracked</li>
+        <li>The documents it produces, and the outside organisations it works with to do so</li>
+      </ul>
+
+      <h3 id="s1-3"><span class="n">1.3</span>Intended audience</h3>
+      <p>This document is written for a general business reader. Executives and business stakeholders will find everything they need in Chapters 1, 2, 4, 5, 9 and 10. Operations and finance teams will also want Chapters 3, 6 and 7. A final technical reference appendix exists solely for IT and integration specialists; business readers can skip it entirely without losing anything.</p>
+
+      <h3 id="s1-4"><span class="n">1.4</span>Definitions and acronyms</h3>
+      <div class="tbl"><table>
+        <tr><th>Term</th><th>Meaning</th></tr>
+        <tr><td>AURA</td><td>The company behind SAZ Assist, our emergency-response benefit (road rescue, security response, ambulance)</td></tr>
+        <tr><td>DMVIC</td><td>Kenya's official motor insurance certificate system. The certificate it produces is the legal proof that a vehicle is insured</td></tr>
+        <tr><td>Draft quote</td><td>A quote that is still being put together, or is waiting to be paid for. Once paid, it becomes a policy</td></tr>
+        <tr><td>eTIMS</td><td>The tax authority's electronic invoicing system</td></tr>
+        <tr><td>IPF</td><td>Instalment Premium Financing: paying for a policy in instalments instead of one lump sum</td></tr>
+        <tr><td>KRA PIN</td><td>A client's tax identification number with the Kenya Revenue Authority</td></tr>
+        <tr><td>KYC</td><td>"Know Your Customer" &mdash; the identity details and declarations collected before cover starts</td></tr>
+        <tr><td>On account</td><td>A credit sale: the policy is issued straight away and the agency pays Sanlam Allianz later</td></tr>
+        <tr><td>Premia (P11)</td><td>Sanlam Allianz's main record-keeping system for policies, also referred to internally as P11</td></tr>
+        <tr><td>KRA</td><td>Kenya Revenue Authority, the tax authority</td></tr>
+        <tr><td>PSV</td><td>Public Service Vehicle, such as a matatu or tour van</td></tr>
+        <tr><td>PVT</td><td>Political Violence and Terrorism cover, an optional add-on</td></tr>
+        <tr><td>Roles and permissions</td><td>The set of rules deciding what each user is allowed to see and do in the portal</td></tr>
+        <tr><td>STK push</td><td>The M-Pesa payment prompt that pops up directly on a client's phone</td></tr>
+        <tr><td>Third Party Only / Fire &amp; Theft</td><td>Cheaper motor cover types that insure a smaller set of risks than full cover</td></tr>
+      </table></div>
+      <p class="caption"><b>Table 1.1</b> Definitions and acronyms</p>
+    </section>
+
+    <!-- ===== 2 ===== -->
+    <section class="part chapter" id="ch2">
+      <h2><span class="n">Chapter 2</span>System overview</h2>
+
+      <h3 id="s2-1"><span class="n">2.1</span>How it is put together</h3>
+      <p>The portal has two parts, built and maintained as one product. The part people see and use &mdash; the website and the screens an agent or admin works in &mdash; is one piece of software. Behind it sits a second piece of software that does the actual thinking: it holds every business rule, works out prices, talks to M-Pesa and the regulator, and keeps the records. Nothing a client or agent sees in their browser ever holds a password or credential for an outside company; only the engine behind the scenes does that, which keeps those relationships secure.</p>
+      <p>Both parts are modern, actively maintained web technologies, hosted in the cloud rather than on a single office server, so the portal can be scaled up as the business grows. A dedicated database keeps every quote, policy and transaction, and a separate connection links the engine directly to Premia (P11), the Group's main record-keeping system, so a sale made in the portal is also recorded there.</p>
+
+      <h3 id="s2-2"><span class="n">2.2</span>How the pieces connect</h3>
+      <p>Three different kinds of user reach the portal: agents and partners who are logged in, Sanlam Allianz staff and administrators who are logged in, and members of the public who buy directly without an account. Whichever way they arrive, every request passes through the same engine, which is the only part of the system allowed to talk to the outside world. Three regulated integrations &mdash; DMVIC, M-Pesa and KRA &mdash; are all reached through one shared connection to keep that relationship simple and secure; everything else is connected to directly.</p>
+      <div class="arch" role="img" aria-label="Architecture: users reach the portal website, which calls the engine behind it, which in turn calls the shared regulatory connection, the other integrations, and Premia.">
+        <div class="col">
+          <span class="lbl">Who uses it</span>
+          <div class="box"><b>Agents &amp; partners</b><small>logged in</small></div>
+          <div class="box"><b>Staff &amp; admins</b><small>logged in</small></div>
+          <div class="box"><b>Public</b><small>no account</small></div>
+        </div>
+        <div class="arrow" aria-hidden="true">&rarr;</div>
+        <div class="col">
+          <span class="lbl">The portal</span>
+          <div class="box core"><b>Website</b><small>what people see</small></div>
+          <div class="box core"><b>Engine</b><small>rules, pricing, payments</small></div>
+          <div class="box core"><b>Records</b><small>quotes &amp; policies stored here</small></div>
+        </div>
+        <div class="arrow" aria-hidden="true">&rarr;</div>
+        <div class="col">
+          <span class="lbl">Integrations</span>
+          <div class="box gw"><b>Shared connection</b><small>DMVIC &middot; M-Pesa &middot; KRA</small></div>
+          <div class="box"><b>Infobip</b><small>email &amp; text messages</small></div>
+          <div class="box"><b>AURA &middot; Flip</b><small>SAZ Assist &middot; valuations</small></div>
+          <div class="box"><b>Premia (P11)</b><small>Group policy records</small></div>
+          <div class="box"><b>Safaricom</b><small>payment confirmations</small></div>
+        </div>
+      </div>
+      <p class="caption"><b>Figure 2.1</b> How the portal connects to the people who use it and the integrations it depends on</p>
+
+      <h3 id="s2-3"><span class="n">2.3</span>What the system does, area by area</h3>
+      <div class="tbl"><table>
+        <tr><th>Area</th><th>What it handles</th></tr>
+        <tr><td>Sales &amp; quoting</td><td>Building a quote, pricing it, turning a paid quote into a policy, extending cover, and crediting a sale to the right agent even when a member of the public bought it directly</td></tr>
+        <tr><td>Underwriting &amp; valuation</td><td>Sending unusual or higher-risk cases to a human for review, and arranging an independent valuation for high-value vehicles</td></tr>
+        <tr><td>Payments</td><td>Taking payment by M-Pesa, allowing agencies to sell on credit, and settling and tracking that credit</td></tr>
+        <tr><td>Policy issuance</td><td>Producing the policy paperwork and the official motor certificate, and checking a vehicle is not already insured elsewhere</td></tr>
+        <tr><td>Renewals</td><td>Bringing in the list of policies due for renewal, checking a client is still eligible, and re-pricing the renewal</td></tr>
+        <tr><td>Communications</td><td>Email and text messages, a record of everything sent, in-app alerts, and bulk messages to the agent network</td></tr>
+        <tr><td>Identity &amp; access</td><td>Secure login, deciding what each person is allowed to do, and collecting the right identity details for each product</td></tr>
+        <tr><td>Operations</td><td>Dashboards, exportable reports, and the reference information the rest of the system relies on</td></tr>
+      </table></div>
+      <p class="caption"><b>Table 2.2</b> Areas of the system and what each is responsible for</p>
+
+      <h3 id="s2-4"><span class="n">2.4</span>Things the system does on its own</h3>
+      <p>A number of routine tasks run automatically, without anyone needing to trigger them:</p>
+      <ul>
+        <li>A daily sales summary is emailed to finance every day.</li>
+        <li>Payments that are left in limbo are checked and resolved every fifteen minutes.</li>
+        <li>Scheduled announcements to agents go out the moment they are due.</li>
+        <li>Old message records are cleared out automatically after thirty days.</li>
+      </ul>
+    </section>
+
+    <!-- ===== 3 ===== -->
+    <section class="part chapter" id="ch3">
+      <h2><span class="n">Chapter 3</span>Users, roles and access control</h2>
+
+      <h3 id="s3-1"><span class="n">3.1</span>User types and roles</h3>
+      <p>Five system roles are seeded. Each is a named bundle of permissions, so administrators can also build custom roles without code changes.</p>
+      <div class="tbl"><table>
+        <tr><th>Role</th><th>Typical user</th><th>Can</th><th>Cannot</th></tr>
+        <tr><td><span class="pill">agent</span></td><td>Field agent, bank branch</td><td>Create, purchase and download own quotes; generate guest quote links</td><td>See other agents' business, analytics, user admin</td></tr>
+        <tr><td><span class="pill">agency_admin</span></td><td>Agency or bank/broker HQ</td><td>All agent rights, team-wide visibility, user directory, analytics, broadcasts</td><td>Rates and platform configuration</td></tr>
+        <tr><td><span class="pill">staff</span></td><td>Internal Sanlam staff</td><td>View and download every quote</td><td>Create, purchase or administer</td></tr>
+        <tr><td><span class="pill">staff_admin</span></td><td>Platform staff</td><td>Full control of the platform: pricing, users, certificates, renewals, reports and content</td><td>&mdash;</td></tr>
+        <tr><td><span class="pill">admin</span></td><td>Operations administrator</td><td>Same permission set as <code>staff_admin</code></td><td>&mdash;</td></tr>
+        <tr><td><span class="pill gold">superuser</span></td><td>Flag on a user, not a role</td><td>Bypasses all permission checks</td><td>&mdash;</td></tr>
+        <tr><td><span class="pill red">guest</span></td><td>Member of the public</td><td>Quote, pay and receive a Motor or PA policy; look up a Motor renewal</td><td>Log in or see past purchases</td></tr>
+      </table></div>
+      <p class="caption"><b>Table 3.1</b> User types and roles</p>
+
+      <h3 id="s3-2"><span class="n">3.2</span>How access is controlled</h3>
+      <p>Every specific action in the portal &mdash; selling a quote, settling an agent's credit, sending a broadcast, and so on &mdash; is its own named permission. A role is simply a bundle of these permissions, and a person's final set of rights is their role's bundle, plus anything granted to them individually, minus anything specifically taken away. A small number of trusted administrators can bypass this entirely. Every change to anyone's access is permanently recorded, so it is always possible to see who changed what, and when. The screens a person cannot use simply do not appear for them, rather than appearing greyed out, and a full, readable list of exactly what each role can do is available inside the portal itself.</p>
+
+      <h3 id="s3-3"><span class="n">3.3</span>Banks and broker partners</h3>
+      <p>A partner organisation, such as a bank, is not treated as a separate kind of user. Its head office is simply an agency administrator in its own right, recognised by its own verified customer code, and each of its branches is an agent linked back to that head office. A branch can itself have sub-branches underneath it, so a partner's own internal structure can be reproduced exactly. Head office and branch accounts are automatically allowed to sell on credit, each against its own credit limit, and an agent carrying unpaid credit cannot be promoted to head office until that is cleared.</p>
+
+      <h3 id="s3-4"><span class="n">3.4</span>Signing in</h3>
+      <ol class="steps">
+        <li><b>Password</b><span>The user enters their password and asks for a one-time code.</span></li>
+        <li><b>One-time code</b><span>A code is sent by text message or email, and only a limited number of attempts are allowed.</span></li>
+        <li><b>Signed in</b><span>Once the code is confirmed, the portal remembers the session securely so the person is not asked to log in again and again.</span></li>
+      </ol>
+      <p>Members of the public buying directly never sign in at all. A small, deliberately limited set of actions &mdash; getting a quote, looking up a renewal, paying, and receiving documents by email, all covered in Section 5.5 &mdash; are the only ones available without an account.</p>
+    </section>
+
+    <!-- ===== 4 ===== -->
+    <section class="part chapter" id="ch4">
+      <h2><span class="n">Chapter 4</span>Product catalogue</h2>
+
+      <h3 id="s4-1"><span class="n">4.1</span>Motor</h3>
+      <div class="tbl"><table>
+        <tr><th>Attribute</th><th>Values</th></tr>
+        <tr><td>Classes</td><td><span class="pill">Motor Private</span><span class="pill">Motor Commercial</span></td></tr>
+        <tr><td>Commercial sub-classes</td><td>Own Goods; General Cartage; PSV Tours (chauffeur-driven, corporate only); Tankers (flammable liquid); Driving School; Institutional (school and church buses); Special Vehicles (agricultural/forestry, ambulance, fire-fighting); Motorcycle</td></tr>
+        <tr><td>Private special cases</td><td>Probox, Succeed, Sienta, Noah, Voxy; Rare and Unique Models</td></tr>
+        <tr><td>Cover types</td><td><span class="pill">Comprehensive</span><span class="pill">Third Party, Fire &amp; Theft</span><span class="pill">Third Party Only</span></td></tr>
+        <tr><td>Optional benefits</td><td>Excess Protector; Political Violence &amp; Terrorism; Windscreen and radio-cassette; Loss of Use; Passenger Legal Liability; Courtesy Car</td></tr>
+        <tr><td>Included benefit</td><td>SAZ Assist emergency response</td></tr>
+      </table></div>
+      <p class="caption"><b>Table 4.1</b> Motor product structure</p>
+      <div class="callout warn"><b>Underwriting referral</b>PSV and Institutional risks route to manual underwriting rather than auto-quote.</div>
+
+      <h3 id="s4-2"><span class="n">4.2</span>Personal Accident</h3>
+      <div class="tbl"><table>
+        <tr><th>Client type</th><th>Sub-type</th><th>Pricing basis</th><th>Terms</th></tr>
+        <tr><td rowspan="2">Individual</td><td>Student</td><td>Rate-driven by risk class (5 plans)</td><td>3 months, 6 months, annual</td></tr>
+        <tr><td>Adult</td><td>Fixed tables: package &times; risk class &times; plan</td><td>Annual</td></tr>
+        <tr><td rowspan="2">Family</td><td>Spouse</td><td>Fixed tables</td><td>Annual</td></tr>
+        <tr><td>Children</td><td>Single child plan, Enhanced package</td><td>Annual</td></tr>
+      </table></div>
+      <p class="caption"><b>Table 4.2</b> Personal Accident structure</p>
+      <p>Adult and family plans use Standard or Enhanced packages across two risk classes and six plan tiers, with accidental-death sums insured from KES 250,000 to KES 10,000,000. Benefit lines are accidental death; permanent and temporary total disablement; funeral expenses; accidental medical expenses; artificial appliances; hospital cash; repatriation; home or vehicle modification; trauma counselling; and SAZ Assist emergency medical response.</p>
+    </section>
+
+    <!-- ===== 5 ===== -->
+    <section class="part chapter" id="ch5">
+      <h2><span class="n">Chapter 5</span>Business processes</h2>
+      <p class="lede">Every journey runs through one quote lifecycle. New business, renewals and guest sales differ only in how the draft quote begins and who it is attributed to.</p>
+
+      <h3 id="s5-1"><span class="n">5.1</span>Stages a quote passes through</h3>
+      <div class="tbl"><table>
+        <tr><th>Stage</th><th>Meaning</th></tr>
+        <tr><td><span class="pill">Being built</span></td><td>Still being put together, or waiting to be paid for</td></tr>
+        <tr><td><span class="pill gold">Under review</span></td><td>Sent to a human underwriter for a manual decision</td></tr>
+        <tr><td><span class="pill gold">Awaiting approval</span></td><td>Waiting for sign-off before it can proceed</td></tr>
+        <tr><td><span class="pill gold">Awaiting valuation</span></td><td>The Motor policy is active, but an independent valuer's report is still outstanding</td></tr>
+        <tr><td><span class="pill">Issued</span></td><td>Paid for and the policy is live</td></tr>
+        <tr><td><span class="pill red">Declined</span></td><td>Not accepted &mdash; for example, a Personal Accident application that failed a required check</td></tr>
+      </table></div>
+      <p class="caption"><b>Table 5.1</b> The stages a quote can be in</p>
+
+      <h3 id="s5-2"><span class="n">5.2</span>Buying Motor cover, with an agent</h3>
+      <ol class="steps">
+        <li><b>Agent starts a quote</b><span>Vehicle, client and cover details are entered.</span></li>
+        <li><b>Price is calculated</b><span>Based on the vehicle type, the cover chosen, and any extra benefits added.</span></li>
+        <li><b>Quote is ready</b><span>The full price breakdown is saved against the quote.</span></li>
+        <li><b>Quote is sent to the client</b><span>A link is emailed to them to review. Unusual or higher-risk cases are sent to an underwriter for review first.</span></li>
+        <li><b>Client accepts and pays</b><span>By M-Pesa, or on agency credit (Chapter 6).</span></li>
+        <li><b>Quote becomes a policy</b><span>The sale is finalised the moment payment is confirmed.</span></li>
+        <li><b>Official certificate is issued</b><span>The system first checks the vehicle is not already insured elsewhere, then the regulator's certificate is issued automatically.</span></li>
+        <li><b>Policy is recorded, client is enrolled</b><span>The sale is recorded in Premia, and the client is automatically enrolled in the SAZ Assist emergency-response benefit.</span></li>
+        <li><b>Documents are emailed</b><span>Policy schedule, policy wording, the SAZ Assist benefit details, a valuation letter if one was needed, the certificate, and a receipt (Chapter 7).</span></li>
+      </ol>
+
+      <h3 id="s5-3"><span class="n">5.3</span>Valuing high-value vehicles</h3>
+      <p>Some vehicles are valuable enough to need an independent valuation before cover is confirmed. At quote time, the client either confirms they already have a recent valuation, or chooses one of our approved valuers: SOLVIT Limited or Links Valuers &amp; Assessors.</p>
+      <ol class="steps">
+        <li><b>Valuer chosen</b><span>Recorded against the quote.</span></li>
+        <li><b>Cover starts, valuation pending</b><span>If no valuation was already in hand, the policy goes live but is marked as awaiting the valuer's report rather than fully complete.</span></li>
+        <li><b>Valuer carries out the inspection</b><span>Progress is tracked automatically as the valuer works through booking, inspection and review, and the result comes back to the portal once the report is ready.</span></li>
+        <li><b>Valuation letter is issued</b><span>A formal letter is produced and emailed along with the rest of the documents. Reminders are sent if a client has not yet accepted a completed valuation.</span></li>
+      </ol>
+
+      <h3 id="s5-4"><span class="n">5.4</span>Renewing a Motor policy</h3>
+      <ol class="steps">
+        <li><b>List of renewals is loaded</b><span>Staff bring in the list of policies due for renewal from Premia.</span></li>
+        <li><b>Vehicle is looked up</b><span>By number plate. This step is open to the public, so a client can start their own renewal without logging in.</span></li>
+        <li><b>Eligibility is checked</b><span>A renewal can be completed up to 14 days after the due date; later than that, it is referred to underwriting instead.</span></li>
+        <li><b>Price is recalculated</b><span>At today's rates, not the old price. Cover that is not fully comprehensive must be paid for in full, not in instalments.</span></li>
+        <li><b>Quote is created from the old policy</b><span>Client and vehicle details carry over automatically, and the sale still counts toward the original agent or partner.</span></li>
+        <li><b>Payment and issuance</b><span>The same checks, certificate and document pack as a new policy.</span></li>
+      </ol>
+
+      <h3 id="s5-5"><span class="n">5.5</span>Buying directly, without an agent</h3>
+      <p>Members of the public can buy Motor or Personal Accident cover, and renew a Motor policy, entirely on their own, with no account needed. If they arrived through a link or QR code shared by a particular agent or partner, that sale is still credited to them behind the scenes; otherwise it is simply recorded as a direct sale.</p>
+      <ol class="steps">
+        <li><b>Get a quote</b><span>The client fills in the Motor or Personal Accident form on the public website.</span></li>
+        <li><b>Pay</b><span>By M-Pesa.</span></li>
+        <li><b>Receive the policy</b><span>Documents are emailed, and stay available to download again later through a secure link.</span></li>
+      </ol>
+      <div class="callout warn"><b>What this is, and is not</b>This is a one-off, guest checkout, not a customer account. There is no login for a member of the public to come back to, and no personal dashboard yet; a full customer portal is planned (Section 10.2).</div>
+
+      <h3 id="s5-6"><span class="n">5.6</span>Buying Personal Accident cover</h3>
+      <ol class="steps">
+        <li><b>Quote and identity details captured</b><span>The cover and plan are chosen, and a short form collects identity details, next of kin, and a few health questions.</span></li>
+        <li><b>Price is calculated</b><span>From the standard Personal Accident rate tables (Table 4.2).</span></li>
+        <li><b>Quote is sent</b><span>A preview of the cover note and policy schedule is available before payment.</span></li>
+        <li><b>Health check</b><span>If the applicant's answers to the health questions raise a concern, the case is sent to an underwriter instead of being approved automatically.</span></li>
+        <li><b>Client pays</b><span>Using the same payment options as Motor.</span></li>
+        <li><b>Tax details verified</b><span>The applicant's tax identification number is checked automatically, and the application is then either approved or declined.</span></li>
+        <li><b>Documents are emailed</b><span>The Personal Accident policy schedule and wording, or a decline notice, as applicable.</span></li>
+      </ol>
+      <p>If a client later extends an already-issued Personal Accident policy, that extension is approved automatically, since their details were already verified when the policy was first issued.</p>
+    </section>
+
+    <!-- ===== 6 ===== -->
+    <section class="part chapter" id="ch6">
+      <h2><span class="n">Chapter 6</span>Payments and reconciliation</h2>
+
+      <h3 id="s6-1"><span class="n">6.1</span>How clients pay</h3>
+      <div class="tbl"><table>
+        <tr><th>Method</th><th>How it works</th><th>Who can use it</th></tr>
+        <tr><td>M-Pesa, phone prompt</td><td>A payment request pops up on the client's phone; the system confirms it automatically, and double-checks every 15 minutes for any that seem stuck</td><td>Agents and members of the public</td></tr>
+        <tr><td>M-Pesa, paybill</td><td>The client pays a paybill number directly, and the payment is matched back to their quote</td><td>Agents and members of the public</td></tr>
+        <tr><td>Agency credit</td><td>The policy is issued straight away, against the agency's own credit limit, with Sanlam Allianz billing them later</td><td>Agents and partners with credit approved</td></tr>
+      </table></div>
+      <p class="caption"><b>Table 6.1</b> Payment methods available today. A card-payment option has been designed but is not yet switched on; cash, cheque and bank transfer are not accepted directly by the portal.</p>
+      <p>The amount a client must pay is always worked out by the system itself, so it cannot be short-paid, and part-payments are not accepted for a single instalment. Whichever way the payment is made, it triggers the same sequence afterwards: the sale is finalised, the certificate is issued, any valuation is kicked off, the client is enrolled in SAZ Assist, and the documents are sent.</p>
+
+      <h3 id="s6-2"><span class="n">6.2</span>Tracking a payment</h3>
+      <div class="tbl"><table>
+        <tr><th>Status</th><th>Meaning</th></tr>
+        <tr><td><span class="pill gold">Pending</span></td><td>Still waiting to be confirmed</td></tr>
+        <tr><td><span class="pill">Successful</span></td><td>Confirmed M-Pesa payment</td></tr>
+        <tr><td><span class="pill red">Failed</span></td><td>The payment did not go through, or was cancelled</td></tr>
+        <tr><td><span class="pill gold">On credit</span></td><td>A credit sale that has not yet been paid off</td></tr>
+        <tr><td><span class="pill">Settled</span></td><td>A credit sale that has since been paid off in full</td></tr>
+      </table></div>
+      <p class="caption"><b>Table 6.2</b> The status a payment can be in</p>
+
+      <h3 id="s6-3"><span class="n">6.3</span>Managing agency credit</h3>
+      <p>Finance clears an agency's outstanding credit either one sale at a time, or in bulk against a single payment, and this is purely a bookkeeping step; it never changes a policy that has already been issued. Outstanding credit is tracked by age &mdash; current, over 30 days, over 60 days, and over 90 days overdue &mdash; so finance can see exactly where the risk sits. An agent can see their own balance, a partner head office can see all of its branches, and finance can export the full picture for reporting.</p>
+    </section>
+
+    <!-- ===== 7 ===== -->
+    <section class="part chapter" id="ch7">
+      <h2><span class="n">Chapter 7</span>Documents and communications</h2>
+
+      <h3 id="s7-1"><span class="n">7.1</span>Policy document pack</h3>
+      <div class="tbl"><table>
+        <tr><th>Document</th><th>Product</th><th>Form</th><th>When</th></tr>
+        <tr><td>Policy schedule</td><td>Motor, PA</td><td>PDF attachment</td><td>Every issued policy</td></tr>
+        <tr><td>Policy wording</td><td>Motor (private or commercial), PA</td><td>PDF attachment</td><td>Every issued policy</td></tr>
+        <tr><td>SAZ Assist brochure</td><td>Motor, PA</td><td>PDF attachment</td><td>Every issued policy</td></tr>
+        <tr><td>Valuation letter</td><td>Motor</td><td>PDF attachment</td><td>When a panel valuer was selected</td></tr>
+        <tr><td>Cover note</td><td>PA</td><td>PDF</td><td>Before and after payment</td></tr>
+        <tr><td>DMVIC certificate</td><td>Motor</td><td>Secure link</td><td>After payment</td></tr>
+        <tr><td>Receipt</td><td>Motor, PA</td><td>Secure link</td><td>After payment</td></tr>
+      </table></div>
+      <p class="caption"><b>Table 7.1</b> Documents issued with a policy</p>
+
+      <h3 id="s7-2"><span class="n">7.2</span>How documents and messages reach people</h3>
+      <ul>
+        <li><b>Email</b> carries the full document pack, quote links, and any referrals or reminders.</li>
+        <li><b>Text message</b> carries login codes, SAZ Assist activation confirmations, and broadcast announcements.</li>
+        <li><b>Secure links</b> let a client reopen their documents in a browser at any time, without needing to log in.</li>
+        <li><b>In-app alerts</b> keep portal users informed, for example the moment a certificate is issued.</li>
+      </ul>
+      <p>Every email and text message sent is logged, so there is a record of who was sent what, when, and whether it was delivered successfully. That record is kept for 30 days; the content of the message itself is not stored.</p>
+
+      <h3 id="s7-3"><span class="n">7.3</span>Proactive notices and broadcasts</h3>
+      <p>The system sends reminders for expiring DMVIC certificates and for valuations awaiting acceptance. Administrators send scheduled email or SMS broadcasts, with attachments, to selected agent and client pools.</p>
+    </section>
+
+    <!-- ===== 8 ===== -->
+    <section class="part chapter" id="ch8">
+      <h2><span class="n">Chapter 8</span>Integrations: what the portal connects to</h2>
+      <p>The portal depends on a number of integrations to do its job properly. Some are run and configured entirely by our own ICT team; others belong to outside organisations. Of those outside connections, some are reached directly, and some are reached through a middleware server &mdash; a piece of connecting software our ICT team builds and manages &mdash; rather than the portal talking to them one-to-one. The full technical detail of how each connection works is kept in the appendix, for IT reference only; what matters for a business reader is set out below.</p>
+
+      <h3 id="s8-1"><span class="n">8.1</span>Internal: run by our own ICT team</h3>
+      <div class="tbl"><table>
+        <tr><th>Integration</th><th>What it does for us</th></tr>
+        <tr><td><span class="pill">Infobip</span></td><td>Sends every email and text message the portal generates</td></tr>
+        <tr><td><span class="pill">Premia (P11)</span></td><td>The Group's own core record-keeping system; holds the master record of every policy, and the portal writes every sale into it directly</td></tr>
+      </table></div>
+      <p class="caption"><b>Table 8.1</b> Integrations that sit inside Sanlam Allianz, under the ICT team's own control</p>
+
+      <h3 id="s8-2"><span class="n">8.2</span>External, reached through Sanlam Allianz's own middleware</h3>
+      <p>Three outside integrations are essential to completing almost every sale. Rather than the portal connecting to each of them one-to-one, all three are reached through a single middleware server. The middleware is the only thing that actually talks to these three outside systems; the portal talks only to the middleware.</p>
+      <div class="tbl"><table>
+        <tr><th>Integration</th><th>What it does for us</th></tr>
+        <tr><td><span class="pill gold">DMVIC</span></td><td>Checks a vehicle is not already insured elsewhere, then issues the official certificate that is the legal proof of motor cover</td></tr>
+        <tr><td><span class="pill gold">M-Pesa</span></td><td>Collects payment from the client, whichever of our payment options they use</td></tr>
+        <tr><td><span class="pill gold">KRA</span></td><td>Fetches a policy-holder's tax details, so their name is automatically filled into the KYC field during quote initiation</td></tr>
+      </table></div>
+      <p class="caption"><b>Table 8.2</b> External integrations reached through the Sanlam Allianz middleware server</p>
+
+      <h3 id="s8-3"><span class="n">8.3</span>External, reached through Flip's valuation gateway</h3>
+      <p>When a vehicle needs an independent valuation, the portal does not connect to the valuer directly. It connects to Flip, a dedicated valuation-industry gateway, and Flip in turn routes the job to one of our approved valuers &mdash; today, SOLVIT Limited or Links Valuers &amp; Assessors &mdash; and sends the completed report back through the same gateway.</p>
+      <div class="tbl"><table>
+        <tr><th>Integration</th><th>What it does for us</th></tr>
+        <tr><td><span class="pill">Flip</span></td><td>Receives our valuation requests, assigns them to one of our approved valuers, and returns the completed report</td></tr>
+      </table></div>
+      <p class="caption"><b>Table 8.3</b> The valuation gateway, and the valuers reached through it</p>
+
+      <h3 id="s8-4"><span class="n">8.4</span>External, connected directly</h3>
+      <p>AURA, the company behind the SAZ Assist emergency-response benefit, is connected to directly, with no middleware in between.</p>
+      <div class="tbl"><table>
+        <tr><th>Integration</th><th>What it does for us</th></tr>
+        <tr><td><span class="pill">AURA</span></td><td>Runs the SAZ Assist emergency-response benefit: every client (and, for family Personal Accident cover, their dependants) is automatically signed up the moment their policy is issued, and AURA keeps us updated as any emergency call-out is handled</td></tr>
+      </table></div>
+      <p class="caption"><b>Table 8.4</b> Direct external integration</p>
+
+      <h3 id="s8-5"><span class="n">8.5</span>Keeping these connections secure</h3>
+      <p>Credentials for every integration are kept in one secure, central place, never scattered through the system's code, and are refreshed automatically before they expire so a connection never silently stops working. Every single call made to an integration, whether direct, through the middleware, or through the Flip gateway, is logged for audit purposes, with any sensitive details hidden, so there is always a full record of what was asked and when.</p>
+    </section>
+
+    <!-- ===== 9 ===== -->
+    <section class="part chapter" id="ch9">
+      <h2><span class="n">Chapter 9</span>Delivery history</h2>
+      <p>Every phase below is in production. Dates come from the programme delivery register.</p>
+      <div class="timeline">
+        <div class="t"><span class="when">Through 11 Dec 2025</span><b>Foundation and go-live</b><p>Motor agency journey (configuration, rating engine, quote UI, underwriting rules, issuance, documentation), reporting suite, valuation and extension-of-cover workflow, UAT and ExCo go-live approval.</p></div>
+        <div class="t"><span class="when">Jan &ndash; Feb 2026</span><b>Motor renewals</b><p>Database design, trigger logic, agent and admin screens, Excel processing, status tracking, renewal payment and documents.</p></div>
+        <div class="t"><span class="when">Mar &ndash; Apr 2026</span><b>Personal Accident</b><p>PA rate engine and configuration, automated policy-schedule sending, guest quoting, KYC, payment, documents and dashboard.</p></div>
+        <div class="t"><span class="when">May &ndash; Jun 2026</span><b>Coverage and communications</b><p>TPO, Commercial and Motorcycle renewals; broadcast tooling.</p></div>
+        <div class="t"><span class="when">Jun &ndash; Jul 2026</span><b>Access and payments</b><p>Configurable RBAC with per-user permissions and user migration; STK auto-verification by callback; on-account selling for all products; M-Pesa auto-receipting and auto-allocation; bank, branch and intermediary roles; partner-linked URLs and QR codes.</p></div>
+        <div class="t"><span class="when">Jul &ndash; Aug 2026</span><b>SAZ Assist, automation and analytics</b><p>AURA enrolment for Motor and PA with admin dashboard and SMS activation; DMVIC-expiry and valuation reminders; analytics rebuild (Overview, Motor Operations Hub, PA dashboard); cover-period tracking; DMVIC end-to-end testing; production and team-performance reports.</p></div>
+        <div class="t flight"><span class="when">In progress</span><b>Claims status automation and design system</b><p>Claims status wireframes; migration of the interface to one token-based design system.</p></div>
+      </div>
+    </section>
+
+    <!-- ===== 10 ===== -->
+    <section class="part chapter" id="ch10">
+      <h2><span class="n">Chapter 10</span>Limitations and future work</h2>
+
+      <h3 id="s10-1"><span class="n">10.1</span>Known limitations</h3>
+      <div class="tbl"><table>
+        <tr><th>Area</th><th>Limitation</th></tr>
+        <tr><td>Direct clients</td><td>A member of the public buying directly has no account, so they cannot look back at a past purchase once their session ends</td></tr>
+        <tr><td>Personal Accident renewals</td><td>Renewals are only automated for Motor; Personal Accident policies are renewed manually for now</td></tr>
+        <tr><td>Vehicle registration lookup</td><td>Looking up a car's registration against the national vehicle registry (NTSA) to automatically fill in the rest of the vehicle's details is not yet supported; an agent still has to enter make, model and the other vehicle details by hand</td></tr>
+        <tr><td>Partner head-office checks</td><td>A check that a partner being promoted to head office is a genuine company, not an individual, is temporarily switched off until the underlying Premia data is reliable enough to rely on</td></tr>
+        <tr><td>SAZ Assist safety net</td><td>An automatic retry for Motor clients who were missed from SAZ Assist enrolment exists, but the same safety net has not yet been built for Personal Accident</td></tr>
+        <tr><td>Internal access controls</td><td>A separate, more tightly controlled role for the development team, so that day-to-day administrators cannot accidentally grant themselves unlimited access, has been designed but not yet built</td></tr>
+      </table></div>
+      <p class="caption"><b>Table 10.1</b> Known limitations</p>
+
+      <h3 id="s10-2"><span class="n">10.2</span>Roadmap</h3>
+      <div class="tbl"><table>
+        <tr><th>Workstream</th><th>Scope</th><th>Status</th></tr>
+        <tr><td>Direct-to-consumer portal</td><td>Customer accounts and dashboard, renewal coverage changes, claims history, notifications, agent collaboration, security and privacy review</td><td><span class="pill gold">Not started</span></td></tr>
+        <tr><td>Instalment Premium Financing</td><td>Switchlink Africa agreement, API integration, eligibility rules, customer journey</td><td><span class="pill gold">Not started</span></td></tr>
+        <tr><td>Claims-linked endorsements</td><td>Benefit usage tracking, claim linkage, usage-based renewal pricing, notifications</td><td><span class="pill gold">Not started</span></td></tr>
+        <tr><td>New product lines</td><td>Home and SME (and PA extensions): pricing, underwriting rules, journeys, documents, regulatory approval</td><td><span class="pill gold">Not started</span></td></tr>
+        <tr><td>Commission automation</td><td>Automatic commission payment, eTIMS reverse invoicing</td><td><span class="pill gold">Not started</span></td></tr>
+        <tr><td>Quoting on behalf of an intermediary</td><td>Letting a Sanlam Allianz underwriter put together and send a quote for a complex case, on an intermediary's behalf, with the sale still credited to that intermediary</td><td><span class="pill gold">Not started</span></td></tr>
+      </table></div>
+      <p class="caption"><b>Table 10.2</b> Planned workstreams</p>
+
+      <h3 id="s10-3"><span class="n">10.3</span>Prioritised enhancement backlog</h3>
+      <p>Alongside the major workstreams above, a more detailed list of smaller enhancements has been gathered from the business and prioritised. Priority 1 items carry the most immediate business value; Priority 4 items are longer-term or depend on a separate project.</p>
+      <div class="tbl"><table>
+        <tr><th>Priority</th><th>Requirement</th><th>Business value</th><th>Clarification needed?</th></tr>
+        <tr><td><span class="pill">P1</span></td><td>Intermediary branding on customer communication</td><td>A better experience for brokers, with clear visibility of the SMS and email communications sent on their behalf</td><td>No</td></tr>
+        <tr><td><span class="pill">P1</span></td><td>Broker-specific banners and announcements</td><td>Direct communication to intermediaries, with confirmation that it has been read</td><td>Confirm the administration process</td></tr>
+        <tr><td><span class="pill">P1</span></td><td>Fix email branding and legacy references</td><td>Brand consistency: emails currently go out under the old "Jubilee Allianz" name and need to say SanlamAllianz General Insurance (Kenya) Ltd</td><td>No</td></tr>
+        <tr><td><span class="pill">P1</span></td><td>Correct payment and M-Pesa branding</td><td>Making sure the correct company name appears when a client is prompted to pay</td><td>No</td></tr>
+        <tr><td><span class="pill">P1</span></td><td>Side mirror benefit option in Motor quotations</td><td>Product enhancement</td><td>No</td></tr>
+        <tr><td><span class="pill">P1</span></td><td>Email-a-quote functionality</td><td>Faster quote delivery and faster client acceptance</td><td>No</td></tr>
+        <tr><td><span class="pill">P1</span></td><td>User activity logs and last-login tracking</td><td>Governance and the ability to audit who did what</td><td>No</td></tr>
+        <tr><td><span class="pill">P1</span></td><td>Formal user-acceptance testing and business sign-off process</td><td>Quality control before new features go live</td><td>No</td></tr>
+        <tr><td><span class="pill gold">P2</span></td><td>Top-performing branches analytics (bank channel)</td><td>Performance monitoring</td><td>Define how performance is measured</td></tr>
+        <tr><td><span class="pill gold">P2</span></td><td>Top-performing staff analytics (bank channel)</td><td>Performance monitoring</td><td>Define how performance is measured</td></tr>
+        <tr><td><span class="pill gold">P2</span></td><td>Split Motor reporting between Private and Commercial</td><td>Reporting enhancement</td><td>Confirm the reporting requirements</td></tr>
+        <tr><td><span class="pill gold">P2</span></td><td>Supervisor visibility of team activity</td><td>Management oversight</td><td>Confirm how supervisors are structured</td></tr>
+        <tr><td><span class="pill gold">P2</span></td><td>View all sales under a broker or intermediary</td><td>Operational oversight</td><td>No</td></tr>
+        <tr><td><span class="pill red">P3</span></td><td>Parent-account settlement process</td><td>Financial control</td><td>Needs a short workshop</td></tr>
+        <tr><td><span class="pill red">P3</span></td><td>Allocating parent payments to branch accounts</td><td>Financial control</td><td>Needs a short workshop</td></tr>
+        <tr><td><span class="pill red">P3</span></td><td>Handling unallocated payments</td><td>Reconciliation</td><td>Needs a short workshop</td></tr>
+        <tr><td><span class="pill red">P3</span></td><td>Settlement history and tracking</td><td>Reconciliation</td><td>Needs a short workshop</td></tr>
+        <tr><td><span class="pill red">P3</span></td><td>Credit-limit management enhancements</td><td>Finance control</td><td>Needs real business scenarios to design against</td></tr>
+        <tr><td><span class="pill red">P3</span></td><td>Allocation-reversal functionality</td><td>Audit and corrections</td><td>Needs real use cases to design against</td></tr>
+        <tr><td><span class="pill red">P3</span></td><td>Bulk settlement process</td><td>Operational efficiency</td><td>Needs the process defined first</td></tr>
+        <tr><td><span class="pill red">P3</span></td><td>Finance settlement inside the portal itself</td><td>Reconciliation</td><td>Needs a decision on who owns this</td></tr>
+        <tr><td><span class="pill red">P4</span></td><td>SMS-based quotation acceptance</td><td>A more digital customer journey</td><td>Treated as a separate project</td></tr>
+        <tr><td><span class="pill red">P4</span></td><td>One-time-code-based customer acceptance</td><td>A more digital customer journey</td><td>Treated as a separate project</td></tr>
+      </table></div>
+      <p class="caption"><b>Table 10.3</b> Prioritised enhancement backlog, gathered from business stakeholders</p>
+
+      <h3 id="s10-4"><span class="n">10.4</span>Questions to resolve before building the above</h3>
+      <p>A handful of the items above cannot be scoped properly until the business has answered a few open questions:</p>
+      <div class="tbl"><table>
+        <tr><th>Topic</th><th>Question to resolve</th></tr>
+        <tr><td>Analytics</td><td>How should a top-performing branch or member of staff be measured &mdash; premium written, commission earned, number of policies, conversion rate, or something else?</td></tr>
+        <tr><td>Supervisor model</td><td>Can one intermediary have more than one supervisor?</td></tr>
+        <tr><td>Settlement ownership</td><td>Should settling an agency's credit be done by Finance, Underwriting, Sales Operations, or the intermediaries themselves?</td></tr>
+        <tr><td>Allocation reversals</td><td>What real business situations require a payment allocation to be reversed?</td></tr>
+        <tr><td>Credit limits</td><td>What specific problem is the requested credit-limit enhancement meant to solve?</td></tr>
+      </table></div>
+      <p class="caption"><b>Table 10.4</b> Open questions requiring a business decision</p>
+    </section>
+
+    <!-- ===== Appendix ===== -->
+    <section class="part chapter" id="appA">
+      <h2><span class="n">Appendix A</span>Technical reference: external connections</h2>
+      <div class="callout warn"><b>For IT and integration teams</b>This appendix exists purely as a technical reference. Nothing in it is required reading to understand how the business operates; everything a general reader needs is in Chapters 1&ndash;10.</div>
+      <p>Integrations are grouped exactly as in Chapter 8: internal, external via the Sanlam Allianz middleware, external via the Flip valuation gateway, and external, direct.</p>
+
+      <h3 id="sA-1"><span class="n">A.1</span>Internal: Infobip and Premia (P11)</h3>
+      <div class="tbl"><table>
+        <tr><th>Service</th><th>Connection type</th><th>Technical routes / parameters</th></tr>
+        <tr><td><span class="pill">Infobip</span></td><td>Direct HTTPS call, static API key, base address set in configuration (<code>INFOBIP_BASE_URL</code>)</td><td class="code"><span class="m">POST</span>/email/3/send<br><span class="m">POST</span>/sms/3/messages</td></tr>
+        <tr><td><span class="pill">Premia (P11)</span></td><td>Direct Oracle database connection, not an HTTPS API</td><td class="code">Policy creation, policy lookup, sold-quote sync, automation email</td></tr>
+      </table></div>
+      <p class="caption"><b>Table A.1</b> Internal integrations</p>
+
+      <h3 id="sA-2"><span class="n">A.2</span>External via the Sanlam Allianz middleware: DMVIC, M-Pesa, KRA</h3>
+      <p>The portal authenticates to the middleware once, with a two-step login that yields one shared bearer token, and that single token is then reused for DMVIC, M-Pesa and KRA calls alike, each request also carrying a <code>vendor-id</code> header.</p>
+      <div class="tbl"><table>
+        <tr><th>Service</th><th>What the connection is used for</th><th>Technical routes</th></tr>
+        <tr><td><span class="pill gold">Shared login</span></td><td>Two-step login that yields the shared security token used for all three services below</td><td class="code"><span class="m">POST</span>/api/get-aki-token<br><span class="m">POST</span>/api/login</td></tr>
+        <tr><td><span class="pill gold">DMVIC</span></td><td>Double-insurance check; issue and download certificates</td><td class="code"><span class="m">POST</span>/api/v1/dmvic/motor/validate-double-insurance<br><span class="m">POST</span>/api/v1/dmvic/motor/generate-certificate<br><span class="m">POST</span>/api/v1/dmvic/motor/download-certificate</td></tr>
+        <tr><td><span class="pill gold">M-Pesa</span></td><td>Payment prompt, status, receipt and bill-reference lookups. Authenticates by reusing the DMVIC-issued token above, rather than a separate M-Pesa login</td><td class="code"><span class="m">POST</span>/api/v1/mps/stk-push-request<br><span class="m">POST</span>/api/v1/mps/stk-push-status<br><span class="m">POST</span>/api/v1/mps/fetch-transaction<br><span class="m">POST</span>/api/v1/mps/fetch-transactions-by-bill-reference</td></tr>
+        <tr><td><span class="pill gold">KRA</span></td><td>Tax ID validation for Personal Accident. Also reuses the same DMVIC-issued token, rather than its own login</td><td class="code"><span class="m">POST</span>/api/v1/kyc/kra-pin-checker</td></tr>
+      </table></div>
+      <p class="caption"><b>Table A.2</b> Services behind the Sanlam Allianz middleware, base address <code>https://saz-app.ke.sanlamallianz.com</code> (configured as <code>DMVIC_BASE_URL</code>; M-Pesa and KRA share it rather than having their own).</p>
+
+      <h3 id="sA-3"><span class="n">A.3</span>External via the Flip valuation gateway</h3>
+      <p>Flip authenticates with a username/password login to obtain a bearer token, and separately requires an <code>x-api-key</code> header, issued by Flip support, on every single call. Our approved valuers are not hard-coded; they are fetched live from Flip's own masterdata endpoint and cached for one hour.</p>
+      <div class="tbl"><table>
+        <tr><th>Purpose</th><th>Technical route</th></tr>
+        <tr><td>Login (bearer token)</td><td class="code">Username/password login to Flip, configured via <code>FLIP_USERNAME</code> / <code>FLIP_PASSWORD</code></td></tr>
+        <tr><td>Submit a valuation request</td><td class="code"><span class="m">POST</span>/valuation/booking/external/</td></tr>
+        <tr><td>Check valuation status</td><td class="code"><span class="m get">GET</span>/valuation/external?reference_id=...</td></tr>
+        <tr><td>Fetch the full valuation report</td><td class="code"><span class="m get">GET</span>/valuation/valuation/external/{reference_id}/</td></tr>
+        <tr><td>Look up our list of approved valuers (Solvit, Links)</td><td class="code"><span class="m get">GET</span>/masterdata/insured/entity-to-entity/external?insurance_id={FLIP_INSURANCE_ID}&amp;entity_type_identifier=VL</td></tr>
+        <tr><td>Flip's completed-valuation webhook back to the portal</td><td class="code"><span class="m">POST</span>/external_apis/flip/webhook</td></tr>
+      </table></div>
+      <p class="caption"><b>Table A.3</b> The Flip valuation gateway, base address <code>FLIP_BASE_URL</code>, client identified by <code>FLIP_CLIENT_ID</code> / <code>FLIP_CLIENT_KEY</code> / <code>FLIP_CLIENT_NAME</code>, every call also carrying <code>FLIP_API_KEY</code> as an <code>x-api-key</code> header.</p>
+
+      <h3 id="sA-4"><span class="n">A.4</span>External, direct: AURA</h3>
+      <p>AURA uses OAuth client-credentials: the portal authenticates with a client ID and client secret to obtain its own bearer token, independent of the middleware and Flip logins above.</p>
+      <div class="tbl"><table>
+        <tr><th>Parameter</th><th>What it is</th></tr>
+        <tr><td class="code">AURA_BASE_URL</td><td>AURA's base address. Documented non-production value: <code>https://staging-panic.aura.services</code></td></tr>
+        <tr><td class="code">AURA_CLIENT_ID</td><td>OAuth client ID</td></tr>
+        <tr><td class="code">AURA_CLIENT_SECRET</td><td>OAuth client secret</td></tr>
+        <tr><td class="code">AURA_SUBSCRIPTION_TYPE_ID_SINGLE / _FAMILY</td><td>Which AURA subscription type to enrol a client into: single cover, or a Personal Accident family plan</td></tr>
+        <tr><td class="code">AURA_ENABLED</td><td>Master on/off switch for the whole integration</td></tr>
+      </table></div>
+      <p class="caption"><b>Table A.4</b> AURA connection parameters. All calls use the prefix <code>/panic-api/v2</code> for customers, subscriptions, subscription and response types, and callouts; AURA's webhook back to the portal is <code>POST /external_apis/aura/webhook</code>.</p>
+
+      <h3 id="sA-5"><span class="n">A.5</span>Inbound callbacks</h3>
+      <div class="tbl"><table>
+        <tr><th>Source</th><th>Portal endpoint</th><th>Purpose</th></tr>
+        <tr><td>Safaricom</td><td class="code">/safaricom/{dyn_payload, confirmation, validation, get_payload, stk_push}</td><td>Payment confirmations and STK results</td></tr>
+        <tr><td>AURA</td><td class="code">/external_apis/aura/webhook</td><td>Ten callout events, from <code>NEW_CALLOUT</code> to <code>CALLOUT_CLOSED</code>; requests are verified with a shared secret</td></tr>
+        <tr><td>Flip</td><td class="code">/external_apis/flip/webhook</td><td>Valuation status and report results</td></tr>
+      </table></div>
+      <p class="caption"><b>Table A.5</b> Inbound callbacks</p>
+
+      <h3 id="sA-6"><span class="n">A.6</span>Credential and token management</h3>
+      <p>Tokens are held in one database table (<code>ExternalApiToken</code>, one row per provider), not in code. Each server keeps an in-memory copy and refreshes it five minutes before expiry; the middleware token is renewed through the two-step login in Table A.2. Every external call is logged with credentials redacted, giving a complete audit trail. AURA and Flip use staging or demo hosts in development configuration; production hosts are set per environment (see the open questions above for what remains unconfirmed).</p>
+    </section>
+
+    <section class="part chapter" id="appB">
+      <h2><span class="n">Appendix B</span>Technical reference: portal API entry points</h2>
+      <p>Main endpoints exposed by the portal backend, for integrators. Full request bodies are in the on-repository Postman collection.</p>
+      <div class="tbl"><table>
+        <tr><th>Area</th><th>Endpoint</th></tr>
+        <tr><td>Login</td><td class="code"><span class="m">POST</span>/auth/login/request-otp<br><span class="m">POST</span>/auth/login/access-token<br><span class="m">POST</span>/auth/login/refresh-token</td></tr>
+        <tr><td>Rating</td><td class="code"><span class="m">POST</span>/rates/{product_code}/calculate-premium</td></tr>
+        <tr><td>Quotes</td><td class="code"><span class="m">POST</span>/quotes/create_draft_quote<br><span class="m">PUT</span>/quotes/draft_quote/{id}<br><span class="m get">GET</span>/quotes/draft_quote/{id}/payment_options</td></tr>
+        <tr><td>Payments</td><td class="code"><span class="m">POST</span>/external_apis/mpesa/stk-push-request<br><span class="m">POST</span>/external_apis/mpesa/stk-push-status<br><span class="m">POST</span>/external_apis/mpesa/verify-receipt<br><span class="m">POST</span>/quotes/draft_quote/{id}/complete-on-account</td></tr>
+        <tr><td>Settlement</td><td class="code"><span class="m">POST</span>/quotes/payment-transaction/{id}/settle-on-account<br><span class="m">POST</span>/quotes/on-account/bulk-settle<br><span class="m get">GET</span>/quotes/on-account/balances</td></tr>
+        <tr><td>Documents</td><td class="code"><span class="m">POST</span>/quotes/send-insurance-documents-email<br><span class="m get">GET</span>/quotes/draft_quote/{id}/motor-policy-schedule<br><span class="m get">GET</span>/quotes/draft_quote/{id}/pa-policy-schedule<br><span class="m get">GET</span>/quotes/valuation-letter/{id}</td></tr>
+        <tr><td>Certificates</td><td class="code"><span class="m get">GET</span>/quotes/{id}/dmvic-certificates?scope=sales|renewals</td></tr>
+        <tr><td>Renewals</td><td class="code"><span class="m">POST</span>/renewals/upload<br><span class="m get">GET</span>/renewals/lookup<br><span class="m">POST</span>/renewals/{id}/create-draft-quote</td></tr>
+      </table></div>
+      <p class="caption"><b>Table B.1</b> Portal API entry points</p>
+      <p class="foot">Sources: jaz_api_v03 and jazk-sales source code; jaz_api_v03/docs (access_control, on_account, external_integrations, SAZ_ASSIST, RENEWALS, MPESA_ENHANCEMENTS, TOKEN_SERVICE); programme delivery register.</p>
+    </section>
+
+  </article>
+  </main>
+</div>
+
+<script>
+(function(){
+  var doc = document.getElementById('doc');
+  var side = document.getElementById('side');
+  var toc = document.getElementById('toc');
+
+  // Build sidebar and table of contents from the headings.
+  var sideHtml = '', tocHtml = '<ol>', open = false, links = [];
+  var groups = {ch1:'Overview', ch3:'Who uses it', ch5:'How it works', ch8:'Partners', ch9:'Track record'};
+  sideHtml += '<div class="grp">Front matter</div><a href="#title"><span class="n">&mdash;</span>Title page</a><a href="#front"><span class="n">&mdash;</span>Abstract</a><a href="#contents"><span class="n">&mdash;</span>Table of contents</a>';
+  doc.querySelectorAll('section.chapter').forEach(function(sec){
+    if (sec.id === 'front' || sec.id === 'contents') return;
+    var h2 = sec.querySelector('h2');
+    var num = h2.querySelector('.n').textContent.replace('Chapter ','');
+    var title = h2.childNodes[1].textContent;
+    if (groups[sec.id]) sideHtml += '<div class="grp">' + groups[sec.id] + '</div>';
+    if (sec.id === 'appA') sideHtml += '<div class="grp">Technical appendix</div>';
+    var shortNum = num.replace('Appendix ','');
+    sideHtml += '<a href="#' + sec.id + '" data-t="' + sec.id + '"><span class="n">' + shortNum + '</span>' + title + '</a>';
+    if (open) tocHtml += '</ol></li>';
+    tocHtml += '<li><a href="#' + sec.id + '"><span class="n">' + shortNum + '</span>' + title + '</a><ol>';
+    open = true;
+    sec.querySelectorAll('h3[id]').forEach(function(h3){
+      var n = h3.querySelector('.n').textContent;
+      var t = h3.childNodes[1].textContent;
+      sideHtml += '<a class="l3" href="#' + h3.id + '" data-t="' + h3.id + '"><span class="n">' + n + '</span>' + t + '</a>';
+      tocHtml += '<li><a href="#' + h3.id + '"><span class="n">' + n + '</span>' + t + '</a></li>';
+    });
+  });
+  tocHtml += (open ? '</ol></li>' : '') + '</ol>';
+  side.innerHTML = sideHtml;
+  toc.innerHTML = tocHtml;
+
+  // Active-section highlight.
+  var targets = doc.querySelectorAll('section.chapter, h3[id], #title');
+  var byId = {};
+  side.querySelectorAll('a').forEach(function(a){ byId[a.getAttribute('href').slice(1)] = a; });
+  function onScroll(){
+    var cur = null, y = 90;
+    targets.forEach(function(el){ if (el.getBoundingClientRect().top <= y) cur = el.id; });
+    side.querySelectorAll('a.active').forEach(function(a){ a.classList.remove('active'); });
+    if (cur && byId[cur]) byId[cur].classList.add('active');
+  }
+  window.addEventListener('scroll', onScroll, {passive:true});
+  onScroll();
+
+  // Mobile menu.
+  var menuBtn = document.getElementById('menuBtn');
+  menuBtn.addEventListener('click', function(){
+    var o = side.classList.toggle('open');
+    menuBtn.setAttribute('aria-expanded', String(o));
+  });
+  side.addEventListener('click', function(e){
+    if (e.target.closest('a') && window.innerWidth <= 900) { side.classList.remove('open'); menuBtn.setAttribute('aria-expanded','false'); }
+  });
+
+  // PDF export.
+  var btn = document.getElementById('pdfBtn');
+  var status = document.getElementById('pdfStatus');
+  var inArtifact = !!(window.claude && window.claude.use);
+  var downloadsP = inArtifact ? window.claude.use('downloads') : Promise.resolve(null);
+  var FILE = 'SAZ-Portal-System-Documentation.pdf';
+
+  function buildPrintRoot(){
+    // html2canvas needs real, attached layout to measure — a detached
+    // clone reports zero size and renders blank. So build one off-screen
+    // (but DOM-attached) container holding every chapter, each starting
+    // a fresh page via CSS, and remove it again once the PDF is built.
+    var root = document.createElement('div');
+    root.className = 'pdf-root';
+    root.style.position = 'fixed';
+    root.style.left = '-10000px';
+    root.style.top = '0';
+    root.style.zIndex = '-1';
+    var inner = document.createElement('div');
+    inner.className = 'doc';
+    doc.querySelectorAll('section.part').forEach(function(sec, i){
+      var page = sec.cloneNode(true);
+      page.classList.add('pdf-page');
+      if (i > 0) page.style.breakBefore = 'page';
+      inner.appendChild(page);
+    });
+    root.appendChild(inner);
+    document.body.appendChild(root);
+    return root;
+  }
+
+  btn.addEventListener('click', async function(){
+    if (typeof html2pdf === 'undefined') { status.textContent = 'PDF library failed to load. Reload the page and try again.'; return; }
+    var downloads = await downloadsP;
+    if (inArtifact && !downloads) { status.textContent = 'Downloads are not available in this view.'; return; }
+    btn.disabled = true; status.textContent = 'Building PDF…';
+    var root = null;
+    try {
+      await document.fonts.ready;
+      root = buildPrintRoot();
+      // Let layout settle on the newly attached, off-screen content
+      // before html2canvas measures it.
+      await new Promise(function(r){ requestAnimationFrame(function(){ requestAnimationFrame(r); }); });
+      var opt = {
+        margin: [14, 14, 16, 14],
+        filename: FILE,
+        image: { type: 'jpeg', quality: 0.95 },
+        html2canvas: { scale: 2, backgroundColor: '#ffffff', useCORS: true, windowWidth: root.scrollWidth },
+        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+        pagebreak: { mode: ['css', 'legacy'], avoid: ['tr', 'li', 'h3', 'h4', '.callout', '.arch', '.caption', '.meta-grid', '.timeline .t'] }
+      };
+      var pdf = await html2pdf().set(opt).from(root).toPdf().get('pdf');
+      var n = pdf.internal.getNumberOfPages();
+      for (var i = 2; i <= n; i++) {
+        pdf.setPage(i);
+        pdf.setFontSize(8); pdf.setTextColor(120);
+        pdf.text('SAZ Portal: System Documentation  ·  v1.2  ·  Internal', 14, 290);
+        pdf.text('Page ' + i + ' of ' + n, 196, 290, { align: 'right' });
+      }
+      if (downloads) {
+        await downloads.save({ filename: FILE, data: pdf.output('blob') });
+        status.textContent = 'PDF saved.';
+      } else {
+        pdf.save(FILE);
+        status.textContent = 'PDF downloaded.';
+      }
+    } catch (e) {
+      var code = e && e.code;
+      status.textContent = code === 'declined' ? 'Download cancelled.' :
+        code === 'rate_limited' ? 'A download prompt is already open.' :
+        'PDF export failed. Try again.';
+    } finally {
+      if (root && root.parentNode) root.parentNode.removeChild(root);
+      btn.disabled = false;
+    }
+  });
+})();
+</script>
+
+</body></html>
+</body>
+</html>
