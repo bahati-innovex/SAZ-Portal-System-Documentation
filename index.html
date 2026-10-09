@@ -5,13 +5,14 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 </head>
 <body>
-<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#faf9f5;color:#141413}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+
 <title>SAZ Portal Reference</title>
 <meta name="description" content="SAZ Portal system documentation: a plain-language account of how the portal works, who uses it, what it sells, and where it is going next, with technical detail kept to a reference appendix.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&family=IBM+Plex+Mono:wght@400;500&display=swap">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mermaid/10.9.1/mermaid.min.js"></script>
 <style>
 :root{
   --ink:#1c2430; --ink-soft:#525c6b; --muted:#7a8291;
@@ -197,6 +198,12 @@ td.code{font-family:"IBM Plex Mono",monospace; font-size:12.5px; line-height:1.7
 .pdf-root .meta-grid div:last-child{border-right:none;}
 .pdf-root [data-no-pdf]{display:none!important;}
 .pdf-root .toc li li{margin-left:26px;}
+
+/* ---------- flow diagrams (mermaid) ---------- */
+.diagram{border:1px solid var(--line); border-radius:10px; background:var(--surface); padding:16px; margin:14px 0 6px; overflow-x:auto;}
+.diagram .mermaid{display:flex; justify-content:center;}
+.diagram svg{max-width:100%; height:auto;}
+.pdf-root .diagram{overflow:visible;}
 </style>
 
 <header class="topbar">
@@ -253,7 +260,7 @@ td.code{font-family:"IBM Plex Mono",monospace; font-size:12.5px; line-height:1.7
       <h2><span class="n">Chapter 1</span>Introduction</h2>
 
       <h3 id="s1-1"><span class="n">1.1</span>Background</h3>
-      <p>Before the portal existed, Motor insurance was quoted and arranged by hand, with underwriting steps completed manually and the sale recorded directly in Sanlam Allianz's core insurance system, Premia. The portal moves that whole experience online, for agents, bank and broker partners, and members of the public buying directly. In one sitting, it works out the price, takes payment over M-Pesa, issues the official motor certificate required by the industry regulator, records the sale in Premia, and emails the client every document they need.</p>
+      <p>Before the portal existed, Motor insurance was quoted and arranged by hand, with underwriting steps completed manually and the sale keyed directly into Sanlam Allianz's core insurance system, Premia. The portal moves that whole experience online, for agents, bank and broker partners, and members of the public buying directly. In one sitting, it works out the price, takes payment over M-Pesa, issues the official motor certificate required by the industry regulator, notifies the Premia operations team so the policy can be loaded there, and emails the client every document they need.</p>
 
       <h3 id="s1-2"><span class="n">1.2</span>Purpose and scope</h3>
       <p>This document describes what the system does today. Anything still being built is described only in Chapter 10, and is always clearly marked as planned rather than delivered. The document covers:</p>
@@ -297,7 +304,7 @@ td.code{font-family:"IBM Plex Mono",monospace; font-size:12.5px; line-height:1.7
 
       <h3 id="s2-1"><span class="n">2.1</span>How it is put together</h3>
       <p>The portal has two parts, built and maintained as one product. The part people see and use &mdash; the website and the screens an agent or admin works in &mdash; is one piece of software. Behind it sits a second piece of software that does the actual thinking: it holds every business rule, works out prices, talks to M-Pesa and the regulator, and keeps the records. Nothing a client or agent sees in their browser ever holds a password or credential for an outside company; only the engine behind the scenes does that, which keeps those relationships secure.</p>
-      <p>Both parts are modern, actively maintained web technologies, hosted in the cloud rather than on a single office server, so the portal can be scaled up as the business grows. A dedicated database keeps every quote, policy and transaction, and a separate connection links the engine directly to Premia (P11), the Group's main record-keeping system, so a sale made in the portal is also recorded there.</p>
+      <p>Both parts are modern, actively maintained web technologies, hosted in the cloud rather than on a single office server, so the portal can be scaled up as the business grows. A dedicated database keeps every quote, policy and transaction, and a separate connection lets the engine look up and list policy data in Premia (P11), the Group's main record-keeping system. Loading a new sale into Premia itself is still handed to the operations team, by an automated email the portal sends at the moment of sale (Chapter 5).</p>
 
       <h3 id="s2-2"><span class="n">2.2</span>How the pieces connect</h3>
       <p>Three different kinds of user reach the portal: agents and partners who are logged in, Sanlam Allianz staff and administrators who are logged in, and members of the public who buy directly without an account. Whichever way they arrive, every request passes through the same engine, which is the only part of the system allowed to talk to the outside world. Three regulated integrations &mdash; DMVIC, M-Pesa and KRA &mdash; are all reached through one shared connection to keep that relationship simple and secure; everything else is connected to directly.</p>
@@ -429,6 +436,18 @@ td.code{font-family:"IBM Plex Mono",monospace; font-size:12.5px; line-height:1.7
         <tr><td><span class="pill red">Declined</span></td><td>Not accepted &mdash; for example, a Personal Accident application that failed a required check</td></tr>
       </table></div>
       <p class="caption"><b>Table 5.1</b> The stages a quote can be in</p>
+      <div class="diagram"><div class="mermaid">
+flowchart TD
+  D["Being built"] -->|"sent for underwriting"| U["Under review"]
+  D -->|"payment confirmed, standard risk"| I["Issued"]
+  D -->|"payment confirmed, valuer selected, no existing valuation"| V["Awaiting valuation"]
+  U -->|"cleared"| P["Awaiting approval"]
+  P -->|"approved"| I
+  P -->|"rejected"| X["Declined"]
+  V -->|"agent accepts the valuation"| I
+  V -->|"same value declined twice"| M["Flagged for manual review"]
+      </div></div>
+      <p class="caption"><b>Figure 5.1</b> How a quote moves between stages, from the statuses recorded on the draft quote in code</p>
 
       <h3 id="s5-2"><span class="n">5.2</span>Buying Motor cover, with an agent</h3>
       <ol class="steps">
@@ -439,9 +458,32 @@ td.code{font-family:"IBM Plex Mono",monospace; font-size:12.5px; line-height:1.7
         <li><b>Client accepts and pays</b><span>By M-Pesa, or on agency credit (Chapter 6).</span></li>
         <li><b>Quote becomes a policy</b><span>The sale is finalised the moment payment is confirmed.</span></li>
         <li><b>Official certificate is issued</b><span>The system first checks the vehicle is not already insured elsewhere, then the regulator's certificate is issued automatically.</span></li>
-        <li><b>Policy is recorded, client is enrolled</b><span>The sale is recorded in Premia, and the client is automatically enrolled in the SAZ Assist emergency-response benefit.</span></li>
+        <li><b>Premia is notified, client is enrolled</b><span>An automated email alerts the Premia operations team to load the policy, and the client is separately enrolled in the SAZ Assist emergency-response benefit.</span></li>
         <li><b>Documents are emailed</b><span>Policy schedule, policy wording, the SAZ Assist benefit details, a valuation letter if one was needed, the certificate, and a receipt (Chapter 7).</span></li>
       </ol>
+      <div class="diagram"><div class="mermaid">
+sequenceDiagram
+  participant A as Agent
+  participant P as Portal engine
+  participant M as DMVIC (via middleware)
+  participant F as Flip
+  participant E as Infobip
+  participant S as AURA (SAZ Assist)
+  participant O as Premia operations team
+  A->>P: Confirm M-Pesa payment
+  P->>P: Convert draft quote to a policy
+  P->>M: Check double insurance, then issue certificate
+  M-->>P: Certificate number and URL
+  opt Valuer selected, no existing valuation
+    P->>F: Submit valuation request
+  end
+  P->>E: Send policy documents email
+  P->>S: Enrol client in SAZ Assist
+  S-->>P: Customer and subscription ID
+  P->>O: Automation email, with full policy and payment detail
+  Note over O: Operations team loads<br/>the policy into Premia
+      </div></div>
+      <p class="caption"><b>Figure 5.2</b> The exact order these steps run in, read from the payment-success handler in <code>payments/orchestration/success.py</code>. The Flip step runs only when a valuer was selected; every other integration runs every time, in this order.</p>
 
       <h3 id="s5-3"><span class="n">5.3</span>Valuing high-value vehicles</h3>
       <p>Some vehicles are valuable enough to need an independent valuation before cover is confirmed. At quote time, the client either confirms they already have a recent valuation, or chooses one of our approved valuers: SOLVIT Limited or Links Valuers &amp; Assessors.</p>
@@ -451,6 +493,17 @@ td.code{font-family:"IBM Plex Mono",monospace; font-size:12.5px; line-height:1.7
         <li><b>Valuer carries out the inspection</b><span>Progress is tracked automatically as the valuer works through booking, inspection and review, and the result comes back to the portal once the report is ready.</span></li>
         <li><b>Valuation letter is issued</b><span>A formal letter is produced and emailed along with the rest of the documents. Reminders are sent if a client has not yet accepted a completed valuation.</span></li>
       </ol>
+      <div class="diagram"><div class="mermaid">
+flowchart TD
+  S["Valuer selected"] --> PE["PENDING: submitted to Flip"]
+  PE --> IP["IN_PROGRESS: valuer assigned"]
+  IP --> UR["UNDER_REVIEW"]
+  UR --> CO["COMPLETED: value returned"]
+  CO -->|"agent accepts"| AC["Premium recalculated, policy closed"]
+  CO -->|"agent declines, first time"| PE
+  CO -->|"same value declined twice"| MR["Flagged: requires manual review"]
+      </div></div>
+      <p class="caption"><b>Figure 5.3</b> The valuation status values recorded in <code>insurance_data.valuation</code>, sourced from <code>FLIP_VALUATION.md</code> and the Flip integration's decline logic</p>
 
       <h3 id="s5-4"><span class="n">5.4</span>Renewing a Motor policy</h3>
       <ol class="steps">
@@ -552,7 +605,7 @@ td.code{font-family:"IBM Plex Mono",monospace; font-size:12.5px; line-height:1.7
       <div class="tbl"><table>
         <tr><th>Integration</th><th>What it does for us</th></tr>
         <tr><td><span class="pill">Infobip</span></td><td>Sends every email and text message the portal generates</td></tr>
-        <tr><td><span class="pill">Premia (P11)</span></td><td>The Group's own core record-keeping system; holds the master record of every policy, and the portal writes every sale into it directly</td></tr>
+        <tr><td><span class="pill">Premia (P11)</span></td><td>The Group's own core record-keeping system; holds the master record of every policy. The portal can look up and list Premia data directly, but a new sale is loaded into Premia by the operations team, alerted by an automated email the portal sends at the point of sale</td></tr>
       </table></div>
       <p class="caption"><b>Table 8.1</b> Integrations that sit inside Sanlam Allianz, under the ICT team's own control</p>
 
@@ -682,7 +735,7 @@ td.code{font-family:"IBM Plex Mono",monospace; font-size:12.5px; line-height:1.7
       <div class="tbl"><table>
         <tr><th>Service</th><th>Connection type</th><th>Technical routes / parameters</th></tr>
         <tr><td><span class="pill">Infobip</span></td><td>Direct HTTPS call, static API key, base address set in configuration (<code>INFOBIP_BASE_URL</code>)</td><td class="code"><span class="m">POST</span>/email/3/send<br><span class="m">POST</span>/sms/3/messages</td></tr>
-        <tr><td><span class="pill">Premia (P11)</span></td><td>Direct Oracle database connection, not an HTTPS API</td><td class="code">Policy creation, policy lookup, sold-quote sync, automation email</td></tr>
+        <tr><td><span class="pill">Premia (P11)</span></td><td>Direct Oracle database connection for lookups; a new sale is loaded into Premia by the operations team off the automation email below, not written by the portal itself</td><td class="code">Policy lookup, sold-quote sync; <code>POST /premia/policy</code> exists for the operations team's own tooling to push a created policy back</td></tr>
       </table></div>
       <p class="caption"><b>Table A.1</b> Internal integrations</p>
 
@@ -696,6 +749,17 @@ td.code{font-family:"IBM Plex Mono",monospace; font-size:12.5px; line-height:1.7
         <tr><td><span class="pill gold">KRA</span></td><td>Tax ID validation for Personal Accident. Also reuses the same DMVIC-issued token, rather than its own login</td><td class="code"><span class="m">POST</span>/api/v1/kyc/kra-pin-checker</td></tr>
       </table></div>
       <p class="caption"><b>Table A.2</b> Services behind the Sanlam Allianz middleware, base address <code>https://saz-app.ke.sanlamallianz.com</code> (configured as <code>DMVIC_BASE_URL</code>; M-Pesa and KRA share it rather than having their own).</p>
+      <div class="diagram"><div class="mermaid">
+sequenceDiagram
+  participant P as Portal
+  participant MW as Sanlam Allianz middleware
+  P->>MW: POST /api/get-aki-token
+  MW-->>P: AKI token
+  P->>MW: POST /api/login (with AKI token)
+  MW-->>P: Bearer token
+  Note over P,MW: That one bearer token is then reused,<br/>unchanged, for every DMVIC, M-Pesa<br/>and KRA call until it is due to expire
+      </div></div>
+      <p class="caption"><b>Figure A.1</b> The two-step login in <code>DMVICClient._get_bearer_token()</code>, shared by the M-Pesa and KRA clients rather than each logging in separately</p>
 
       <h3 id="sA-3"><span class="n">A.3</span>External via the Flip valuation gateway</h3>
       <p>Flip authenticates with a username/password login to obtain a bearer token, and separately requires an <code>x-api-key</code> header, issued by Flip support, on every single call. Our approved valuers are not hard-coded; they are fetched live from Flip's own masterdata endpoint and cached for one hour.</p>
@@ -721,6 +785,22 @@ td.code{font-family:"IBM Plex Mono",monospace; font-size:12.5px; line-height:1.7
         <tr><td class="code">AURA_ENABLED</td><td>Master on/off switch for the whole integration</td></tr>
       </table></div>
       <p class="caption"><b>Table A.4</b> AURA connection parameters. All calls use the prefix <code>/panic-api/v2</code> for customers, subscriptions, subscription and response types, and callouts; AURA's webhook back to the portal is <code>POST /external_apis/aura/webhook</code>.</p>
+      <div class="diagram"><div class="mermaid">
+flowchart TD
+  A["Policy paid and converted"] --> B{"AURA_ENABLED?"}
+  B -->|"no"| Z["Stop: no AURA call made"]
+  B -->|"yes"| C{"Already enrolled<br/>for this draft?"}
+  C -->|"yes"| Z2["Return the existing enrolment"]
+  C -->|"no"| D{"Product enabled in<br/>AuraProductConfig?"}
+  D -->|"no"| Z
+  D -->|"yes"| E{"Subscription type<br/>resolves?"}
+  E -->|"no"| Z3["Log failure, no AURA call made"]
+  E -->|"yes"| F["Create AURA customer + subscription"]
+  F --> G{"Customer ID and subscription ID<br/>both came back?"}
+  G -->|"no"| Z4["Log failure, nothing saved"]
+  G -->|"yes"| H["Save the enrolment record"]
+      </div></div>
+      <p class="caption"><b>Figure A.2</b> The enrolment gates in <code>service.enroll_saz_assist</code> &mdash; a customer is never created with no working subscription attached, and a half-successful AURA call is never mistaken for a complete one</p>
 
       <h3 id="sA-5"><span class="n">A.5</span>Inbound callbacks</h3>
       <div class="tbl"><table>
@@ -732,7 +812,7 @@ td.code{font-family:"IBM Plex Mono",monospace; font-size:12.5px; line-height:1.7
       <p class="caption"><b>Table A.5</b> Inbound callbacks</p>
 
       <h3 id="sA-6"><span class="n">A.6</span>Credential and token management</h3>
-      <p>Tokens are held in one database table (<code>ExternalApiToken</code>, one row per provider), not in code. Each server keeps an in-memory copy and refreshes it five minutes before expiry; the middleware token is renewed through the two-step login in Table A.2. Every external call is logged with credentials redacted, giving a complete audit trail. AURA and Flip use staging or demo hosts in development configuration; production hosts are set per environment (see the open questions above for what remains unconfirmed).</p>
+      <p>Tokens are held in one database table (<code>ExternalApiToken</code>, one row per provider), not in code. Each server keeps an in-memory copy and refreshes it five minutes before expiry; the middleware token is renewed through the two-step login in Table A.2. Every external call is logged with credentials redacted, giving a complete audit trail. AURA and Flip use staging or demo hosts in development configuration; production hosts are set per environment.</p>
     </section>
 
     <section class="part chapter" id="appB">
@@ -759,6 +839,33 @@ td.code{font-family:"IBM Plex Mono",monospace; font-size:12.5px; line-height:1.7
 
 <script>
 (function(){
+  // Flow diagrams: render once, using the page's own light/dark tokens,
+  // so diagrams match the surrounding chapter instead of mermaid's default look.
+  if (typeof mermaid !== 'undefined') {
+    var cs = getComputedStyle(document.documentElement);
+    var tok = function(name){ return cs.getPropertyValue(name).trim(); };
+    mermaid.initialize({
+      startOnLoad: true,
+      securityLevel: 'loose',
+      fontFamily: '"IBM Plex Sans", system-ui, sans-serif',
+      theme: 'base',
+      themeVariables: {
+        fontFamily: '"IBM Plex Sans", system-ui, sans-serif',
+        primaryColor: tok('--accent-soft') || '#e3ece8',
+        primaryTextColor: tok('--ink') || '#1c2430',
+        primaryBorderColor: tok('--accent') || '#2f6f62',
+        lineColor: tok('--muted') || '#7a8291',
+        secondaryColor: tok('--gold-soft') || '#f3e8d4',
+        secondaryBorderColor: tok('--gold') || '#9c6d27',
+        tertiaryColor: tok('--surface') || '#ffffff',
+        noteBkgColor: tok('--gold-soft') || '#f3e8d4',
+        noteBorderColor: tok('--gold') || '#9c6d27',
+        noteTextColor: tok('--ink') || '#1c2430',
+        edgeLabelBackground: tok('--surface') || '#ffffff'
+      }
+    });
+  }
+
   var doc = document.getElementById('doc');
   var side = document.getElementById('side');
   var toc = document.getElementById('toc');
@@ -862,7 +969,7 @@ td.code{font-family:"IBM Plex Mono",monospace; font-size:12.5px; line-height:1.7
         image: { type: 'jpeg', quality: 0.95 },
         html2canvas: { scale: 2, backgroundColor: '#ffffff', useCORS: true, windowWidth: root.scrollWidth },
         jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
-        pagebreak: { mode: ['css', 'legacy'], avoid: ['tr', 'li', 'h3', 'h4', '.callout', '.arch', '.caption', '.meta-grid', '.timeline .t'] }
+        pagebreak: { mode: ['css', 'legacy'], avoid: ['tr', 'li', 'h3', 'h4', '.callout', '.arch', '.diagram', '.caption', '.meta-grid', '.timeline .t'] }
       };
       var pdf = await html2pdf().set(opt).from(root).toPdf().get('pdf');
       var n = pdf.internal.getNumberOfPages();
@@ -892,6 +999,6 @@ td.code{font-family:"IBM Plex Mono",monospace; font-size:12.5px; line-height:1.7
 })();
 </script>
 
-</body></html>
+
 </body>
 </html>
