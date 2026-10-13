@@ -563,6 +563,31 @@ flowchart TD
         <li><b>Documents are emailed</b><span>The Personal Accident policy schedule and wording, or a decline notice, as applicable.</span></li>
       </ol>
       <p>If a client later extends an already-issued Personal Accident policy, that extension is approved automatically, since their details were already verified when the policy was first issued.</p>
+
+      <h3 id="s5-7"><span class="n">5.7</span>Extending Motor cover after a valuation</h3>
+      <p>A Motor policy that needed a valuation (Section 5.3) starts out on a one-month certificate at the original sum insured. Once the agent accepts the valuer's figure, the premium is recalculated against the new sum insured, and the client owes the difference before the policy can carry a full annual certificate. Paying that difference is what "extending cover" means here &mdash; it is not a separate product, and it does not touch SAZ Assist or the Premia notification, both of which already happened once at first issue.</p>
+      <ol class="steps">
+        <li><b>Extend-cover screen opens</b><span>Only available once the valuation has been accepted; the amount due is always fetched fresh from the server, never calculated in the browser.</span></li>
+        <li><b>Client pays the difference</b><span>By M-Pesa or on-account, flagged as an extension rather than a first payment.</span></li>
+        <li><b>Certificate is reissued for the full term</b><span>The same DMVIC check-and-issue call as new business runs again, now covering the full annual period instead of one month.</span></li>
+        <li><b>Updated documents are emailed</b><span>A fresh policy schedule, at the new premium and sum insured.</span></li>
+      </ol>
+      <div class="diagram"><div class="mermaid">
+sequenceDiagram
+  participant Agent
+  participant P as Portal engine
+  participant M as DMVIC (via middleware)
+  participant E as Infobip
+  Agent->>P: Open Extend Cover (valuation already accepted)
+  P->>P: GET extend_payment_options &mdash; amount_due, can_pay
+  Agent->>P: Confirm payment, payment_context: "extend"
+  P->>P: Record payment, recompute payment_summary
+  P->>M: Re-run double-insurance check, issue certificate for the full annual period
+  M-->>P: New certificate number and URL
+  P->>E: Send updated policy schedule by email
+  Note over P: SAZ Assist enrolment and the Premia<br/>notification are not repeated &mdash; both<br/>already ran once, at first issue (Figure 5.3)
+      </div></div>
+      <p class="caption"><b>Figure 5.5</b> Extending cover after an accepted valuation, sourced from <code>docs/external_integrations/PAYMENT_EXTENSION_INTEGRATOR_UPDATE.md</code> and the <code>extend_payment_options</code> endpoint; the amount due always comes from the server, never from a locally cached figure</p>
     </section>
 
     <!-- ===== 6 ===== -->
@@ -828,7 +853,29 @@ flowchart TD
   G -->|"no"| Z4["Log failure, nothing saved"]
   G -->|"yes"| H["Save the enrolment record"]
       </div></div>
-      <p class="caption"><b>Figure A.2</b> The enrolment gates in <code>service.enroll_saz_assist</code> &mdash; a customer is never created with no working subscription attached, and a half-successful AURA call is never mistaken for a complete one</p>
+      <p class="caption"><b>Figure A.6</b> The enrolment gates in <code>service.enroll_saz_assist</code> &mdash; a customer is never created with no working subscription attached, and a half-successful AURA call is never mistaken for a complete one</p>
+
+      <div class="diagram"><div class="mermaid">
+sequenceDiagram
+  participant P as Portal engine
+  participant A as AURA (AURASOS)
+  P->>A: OAuth client-credentials request (AURA_CLIENT_ID / AURA_CLIENT_SECRET)
+  A-->>P: Bearer token
+  P->>A: Create customer + subscription {name, mobile, externalReferenceId, subscriptionTypeId, duressCode}
+  A-->>P: {customerId, subscriptionId}
+  opt Personal Accident family plan
+    par Each dependant, concurrently
+      P->>A: Create dependant as their own AURA customer
+      A-->>P: dependantCustomerId
+    end
+    P->>A: Attach dependantCustomerIds[] to the main member's subscription
+  end
+  P->>P: Save the AuraEnrolment row (Figure A.6)
+  Note over A,P: Separately, whenever a client raises an emergency:
+  A->>P: Webhook &mdash; POST /external_apis/aura/webhook<br/>(one of 10 verified event types, NEW_CALLOUT to CALLOUT_CLOSED)
+  P->>P: Verify the shared webhook secret, log the event,<br/>update the callout funnel shown on the SAZ Assist dashboard
+      </div></div>
+      <p class="caption"><b>Figure A.7</b> The actual AURA customer/subscription call, read from <code>external_apis/aura/service.py</code> and <code>mapping.py</code>, plus the callout webhook defined in <code>external_apis/aura/webhook.py</code> and <code>constants.py</code></p>
 
       <h3 id="sA-5"><span class="n">A.5</span>Inbound callbacks</h3>
       <div class="tbl"><table>
@@ -956,16 +1003,24 @@ flowchart TD
   var FILE = 'SAZ-Portal-System-Documentation.pdf';
 
   function buildPrintRoot(){
-    // html2canvas needs real, attached layout to measure — a detached
-    // clone reports zero size and renders blank. So build one off-screen
-    // (but DOM-attached) container holding every chapter, each starting
-    // a fresh page via CSS, and remove it again once the PDF is built.
+    // html2canvas needs real, attached, on-screen layout to measure.
+    // A detached clone reports zero size, and a clone parked off-screen
+    // at a large negative offset (position:fixed; left:-10000px) is the
+    // classic html2canvas blank-canvas trap: its internal clone/iframe
+    // step loses track of that offset and rasterises nothing. So this
+    // builds a full-viewport overlay instead — genuinely on-screen,
+    // covering the page with its own content while the PDF is built —
+    // and removes it again once html2canvas has read it.
+    var overlay = document.createElement('div');
+    overlay.id = 'pdfOverlay';
+    overlay.style.position = 'fixed';
+    overlay.style.inset = '0';
+    overlay.style.zIndex = '2147483647';
+    overlay.style.background = '#ffffff';
+    overlay.style.overflow = 'auto';
     var root = document.createElement('div');
     root.className = 'pdf-root';
-    root.style.position = 'fixed';
-    root.style.left = '-10000px';
-    root.style.top = '0';
-    root.style.zIndex = '-1';
+    root.style.margin = '0 auto';
     var inner = document.createElement('div');
     inner.className = 'doc';
     doc.querySelectorAll('section.part').forEach(function(sec, i){
@@ -975,8 +1030,9 @@ flowchart TD
       inner.appendChild(page);
     });
     root.appendChild(inner);
-    document.body.appendChild(root);
-    return root;
+    overlay.appendChild(root);
+    document.body.appendChild(overlay);
+    return overlay;
   }
 
   btn.addEventListener('click', async function(){
@@ -984,18 +1040,20 @@ flowchart TD
     var downloads = await downloadsP;
     if (inArtifact && !downloads) { status.textContent = 'Downloads are not available in this view.'; return; }
     btn.disabled = true; status.textContent = 'Building PDF…';
-    var root = null;
+    var overlay = null;
     try {
       await document.fonts.ready;
-      root = buildPrintRoot();
-      // Let layout settle on the newly attached, off-screen content
-      // before html2canvas measures it.
+      overlay = buildPrintRoot();
+      var root = overlay.firstChild;
+      // Force layout + a real paint on the now on-screen overlay before
+      // html2canvas measures it — two animation-frame ticks is enough
+      // for the browser to settle fonts, mermaid SVGs and table layout.
       await new Promise(function(r){ requestAnimationFrame(function(){ requestAnimationFrame(r); }); });
       var opt = {
         margin: [14, 14, 16, 14],
         filename: FILE,
         image: { type: 'jpeg', quality: 0.95 },
-        html2canvas: { scale: 2, backgroundColor: '#ffffff', useCORS: true, windowWidth: root.scrollWidth },
+        html2canvas: { scale: 2, backgroundColor: '#ffffff', useCORS: true, scrollX: 0, scrollY: 0, windowWidth: root.scrollWidth, windowHeight: root.scrollHeight },
         jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
         pagebreak: { mode: ['css', 'legacy'], avoid: ['tr', 'li', 'h3', 'h4', '.callout', '.arch', '.diagram', '.caption', '.meta-grid', '.timeline .t'] }
       };
@@ -1020,7 +1078,7 @@ flowchart TD
         code === 'rate_limited' ? 'A download prompt is already open.' :
         'PDF export failed. Try again.';
     } finally {
-      if (root && root.parentNode) root.parentNode.removeChild(root);
+      if (overlay && overlay.parentNode) overlay.parentNode.removeChild(overlay);
       btn.disabled = false;
     }
   });
