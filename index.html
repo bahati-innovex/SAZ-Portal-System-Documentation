@@ -464,6 +464,30 @@ flowchart TD
       <div class="diagram"><div class="mermaid">
 sequenceDiagram
   participant A as Agent
+  participant W as Portal website
+  participant E as Portal engine
+  participant R as Rating engine
+  participant C as Client
+  A->>W: Enter vehicle, client and cover details
+  W->>E: POST /create_draft_quote
+  E-->>W: Draft quote created (status: draft)
+  W->>E: POST /rates/{product_code}/calculate-premium
+  E->>R: Price by class, cover type, benefits
+  R-->>E: Premium breakdown
+  E-->>W: Premium breakdown
+  W->>E: PUT /draft_quote/{id} (save premium on the draft)
+  alt Specialist risk (PSV, Institutional)
+    E->>C: Underwriting referral email
+  else Standard risk
+    E->>C: Shareable quote link, by email
+  end
+  Note over C: Client reviews, then pays &mdash; Figure 5.3
+      </div></div>
+      <p class="caption"><b>Figure 5.2</b> The quoting process itself, before any money changes hands &mdash; <code>quotes/api/draft_quotes.py</code> for the draft quote endpoints, <code>rate_sets/routes.py</code> for the rating call.</p>
+
+      <div class="diagram"><div class="mermaid">
+sequenceDiagram
+  participant A as Agent
   participant P as Portal engine
   participant M as DMVIC (via middleware)
   participant F as Flip
@@ -475,15 +499,19 @@ sequenceDiagram
   P->>M: Check double insurance, then issue certificate
   M-->>P: Certificate number and URL
   opt Valuer selected, no existing valuation
-    P->>F: Submit valuation request
+    P->>F: Submit valuation request (ticket created, status PENDING)
   end
   P->>E: Send policy documents email
   P->>S: Enrol client in SAZ Assist
   S-->>P: Customer and subscription ID
   P->>O: Automation email, with full policy and payment detail
   Note over O: Operations team loads<br/>the policy into Premia
+  Note over P,F: Minutes to days later, asynchronously:
+  F->>P: Webhook &mdash; valuation ticket completed, with vehicle value
+  P->>P: Store the returned value, status set to COMPLETED
+  Note over P: Or, if the webhook is ever missed,<br/>a scheduled poll picks up the same result &mdash; Figure 5.4
       </div></div>
-      <p class="caption"><b>Figure 5.2</b> The exact order these steps run in, read from the payment-success handler in <code>payments/orchestration/success.py</code>. The Flip step runs only when a valuer was selected; every other integration runs every time, in this order.</p>
+      <p class="caption"><b>Figure 5.3</b> The exact order these steps run in, read from the payment-success handler in <code>payments/orchestration/success.py</code>, plus how Flip's result actually gets back to the portal &mdash; a webhook (<code>POST /external_apis/flip/webhook</code>), backed by a scheduled poll. The Flip step runs only when a valuer was selected; every other integration runs every time, in this order.</p>
 
       <h3 id="s5-3"><span class="n">5.3</span>Valuing high-value vehicles</h3>
       <p>Some vehicles are valuable enough to need an independent valuation before cover is confirmed. At quote time, the client either confirms they already have a recent valuation, or chooses one of our approved valuers: SOLVIT Limited or Links Valuers &amp; Assessors.</p>
@@ -503,7 +531,7 @@ flowchart TD
   CO -->|"agent declines, first time"| PE
   CO -->|"same value declined twice"| MR["Flagged: requires manual review"]
       </div></div>
-      <p class="caption"><b>Figure 5.3</b> The valuation status values recorded in <code>insurance_data.valuation</code>, sourced from <code>FLIP_VALUATION.md</code> and the Flip integration's decline logic</p>
+      <p class="caption"><b>Figure 5.4</b> The valuation status values recorded in <code>insurance_data.valuation</code> once Flip's webhook or poll result lands (Figure 5.3), sourced from <code>FLIP_VALUATION.md</code> and the Flip integration's decline logic</p>
 
       <h3 id="s5-4"><span class="n">5.4</span>Renewing a Motor policy</h3>
       <ol class="steps">
