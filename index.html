@@ -449,6 +449,16 @@ flowchart TD
       </div></div>
       <p class="caption"><b>Figure 5.1</b> How a quote moves between stages, from the statuses recorded on the draft quote in code</p>
 
+      <div class="diagram"><div class="mermaid">
+flowchart LR
+  NQ["New Quote<br/>vehicle class, cover type<br/>and benefits selected"] -->|"POST /rates/motor/calculate-premium"| PR["Premium &amp; benefits<br/>engine computation"]
+  PR --> CD1["Step 1<br/>Client Details<br/>contact info, KRA PIN check"]
+  CD1 --> VD["Step 2<br/>Vehicle Details<br/>registration, body type,<br/>chassis &amp; engine numbers"]
+  VD --> CoD["Step 3<br/>Cover Details<br/>financier, cover dates,<br/>valuer, declarations"]
+  CoD --> RP["Step 4<br/>Review &amp; Payment<br/>confirm everything, pay"]
+      </div></div>
+      <p class="caption"><b>Figure 5.2</b> The screen-by-screen journey an agent actually walks through. Rating happens once, at New Quote (<code>motor-insurance-quotation.component.ts</code>), before the four-step wizard begins (<code>motor-kyc.component.ts</code>, steps defined at line 207 as exactly these four labels). "Cover Details" in that wizard is financier, cover dates, valuer and declarations &mdash; not a second round of benefit pricing; nothing in <code>kyc-cover-details.component.ts</code> calls the rating endpoint again.</p>
+
       <h3 id="s5-2"><span class="n">5.2</span>Buying Motor cover, with an agent</h3>
       <ol class="steps">
         <li><b>Agent starts a quote</b><span>Vehicle, client and cover details are entered.</span></li>
@@ -481,9 +491,9 @@ sequenceDiagram
   else Standard risk
     E->>C: Shareable quote link, by email
   end
-  Note over C: Client reviews, then pays &mdash; Figure 5.3
+  Note over C: Client reviews, then pays &mdash; Figure 5.4
       </div></div>
-      <p class="caption"><b>Figure 5.2</b> The quoting process itself, before any money changes hands &mdash; <code>quotes/api/draft_quotes.py</code> for the draft quote endpoints, <code>rate_sets/routes.py</code> for the rating call.</p>
+      <p class="caption"><b>Figure 5.3</b> The backend side of the same journey, before any money changes hands &mdash; <code>quotes/api/draft_quotes.py</code> for the draft quote endpoints, <code>rate_sets/routes.py</code> for the rating call.</p>
 
       <div class="diagram"><div class="mermaid">
 sequenceDiagram
@@ -509,9 +519,9 @@ sequenceDiagram
   Note over P,F: Minutes to days later, asynchronously:
   F->>P: Webhook &mdash; valuation ticket completed, with vehicle value
   P->>P: Store the returned value, status set to COMPLETED
-  Note over P: Or, if the webhook is ever missed,<br/>a scheduled poll picks up the same result &mdash; Figure 5.4
+  Note over P: Or, if the webhook is ever missed,<br/>a scheduled poll picks up the same result &mdash; Figure 5.5
       </div></div>
-      <p class="caption"><b>Figure 5.3</b> The exact order these steps run in, read from the payment-success handler in <code>payments/orchestration/success.py</code>, plus how Flip's result actually gets back to the portal &mdash; a webhook (<code>POST /external_apis/flip/webhook</code>), backed by a scheduled poll. The Flip step runs only when a valuer was selected; every other integration runs every time, in this order.</p>
+      <p class="caption"><b>Figure 5.4</b> The exact order these steps run in, read from the payment-success handler in <code>payments/orchestration/success.py</code>, plus how Flip's result actually gets back to the portal &mdash; a webhook (<code>POST /external_apis/flip/webhook</code>), backed by a scheduled poll. The Flip step runs only when a valuer was selected; every other integration runs every time, in this order.</p>
 
       <h3 id="s5-3"><span class="n">5.3</span>Valuing high-value vehicles</h3>
       <p>Some vehicles are valuable enough to need an independent valuation before cover is confirmed. At quote time, the client either confirms they already have a recent valuation, or chooses one of our approved valuers: SOLVIT Limited or Links Valuers &amp; Assessors.</p>
@@ -531,7 +541,7 @@ flowchart TD
   CO -->|"agent declines, first time"| PE
   CO -->|"same value declined twice"| MR["Flagged: requires manual review"]
       </div></div>
-      <p class="caption"><b>Figure 5.4</b> The valuation status values recorded in <code>insurance_data.valuation</code> once Flip's webhook or poll result lands (Figure 5.3), sourced from <code>FLIP_VALUATION.md</code> and the Flip integration's decline logic</p>
+      <p class="caption"><b>Figure 5.5</b> The valuation status values recorded in <code>insurance_data.valuation</code> once Flip's webhook or poll result lands (Figure 5.4), sourced from <code>FLIP_VALUATION.md</code> and the Flip integration's decline logic</p>
 
       <h3 id="s5-4"><span class="n">5.4</span>Renewing a Motor policy</h3>
       <ol class="steps">
@@ -585,9 +595,9 @@ sequenceDiagram
   P->>M: Re-run double-insurance check, issue certificate for the full annual period
   M-->>P: New certificate number and URL
   P->>E: Send updated policy schedule by email
-  Note over P: SAZ Assist enrolment and the Premia<br/>notification are not repeated &mdash; both<br/>already ran once, at first issue (Figure 5.3)
+  Note over P: SAZ Assist enrolment and the Premia<br/>notification are not repeated &mdash; both<br/>already ran once, at first issue (Figure 5.4)
       </div></div>
-      <p class="caption"><b>Figure 5.5</b> Extending cover after an accepted valuation, sourced from <code>docs/external_integrations/PAYMENT_EXTENSION_INTEGRATOR_UPDATE.md</code> and the <code>extend_payment_options</code> endpoint; the amount due always comes from the server, never from a locally cached figure</p>
+      <p class="caption"><b>Figure 5.6</b> Extending cover after an accepted valuation, sourced from <code>docs/external_integrations/PAYMENT_EXTENSION_INTEGRATOR_UPDATE.md</code> and the <code>extend_payment_options</code> endpoint; the amount due always comes from the server, never from a locally cached figure</p>
     </section>
 
     <!-- ===== 6 ===== -->
@@ -791,6 +801,19 @@ sequenceDiagram
         <tr><td><span class="pill">Premia (P11)</span></td><td>Direct Oracle database connection for lookups; a new sale is loaded into Premia by the operations team off the automation email below, not written by the portal itself</td><td class="code">Policy lookup, sold-quote sync; <code>POST /premia/policy</code> exists for the operations team's own tooling to push a created policy back</td></tr>
       </table></div>
       <p class="caption"><b>Table A.1</b> Internal integrations</p>
+      <div class="diagram"><div class="mermaid">
+sequenceDiagram
+  participant P as Portal engine
+  participant I as Infobip
+  P->>I: POST /email/3/send {to, subject, html body, attachments[]}
+  I-->>P: {messageId, status}
+  P->>P: Write a CommunicationLog row (channel=email)
+  Note over P,I: Separately, any time:
+  P->>I: POST /sms/3/messages {to, text}
+  I-->>P: {messageId, status}
+  P->>P: Write a CommunicationLog row (channel=sms)
+      </div></div>
+      <p class="caption"><b>Figure A.1</b> Every email and SMS the portal sends goes through these two calls, authenticated with one static API key (<code>infobip/client.py</code>); nothing talks to Infobip except this one client</p>
 
       <h3 id="sA-2"><span class="n">A.2</span>External via the Sanlam Allianz middleware: DMVIC, M-Pesa, KRA</h3>
       <p>The portal authenticates to the middleware once, with a two-step login that yields one shared bearer token, and that single token is then reused for DMVIC, M-Pesa and KRA calls alike, each request also carrying a <code>vendor-id</code> header.</p>
@@ -812,7 +835,56 @@ sequenceDiagram
   MW-->>P: Bearer token
   Note over P,MW: That one bearer token is then reused,<br/>unchanged, for every DMVIC, M-Pesa<br/>and KRA call until it is due to expire
       </div></div>
-      <p class="caption"><b>Figure A.1</b> The two-step login in <code>DMVICClient._get_bearer_token()</code>, shared by the M-Pesa and KRA clients rather than each logging in separately</p>
+      <p class="caption"><b>Figure A.2</b> The two-step login in <code>DMVICClient._get_bearer_token()</code>, shared by the M-Pesa and KRA clients rather than each logging in separately</p>
+
+      <div class="diagram"><div class="mermaid">
+sequenceDiagram
+  participant P as Portal engine
+  participant MW as DMVIC (middleware)
+  Note over P,MW: Bearer token from Figure A.2 is sent on every call below
+  P->>MW: POST .../validate-double-insurance {reg_no, chassis_no}
+  MW-->>P: {status, message} &mdash; ER007 means already insured elsewhere
+  P->>MW: POST .../generate-certificate {policy ref, vehicle, cover start/end, vendor-id header}
+  MW-->>P: {certificate_no, transaction_ref, certificate_url (often null)}
+  opt certificate_url came back null
+    P->>MW: POST .../download-certificate {certificate_number}
+    MW-->>P: {certificate_url}
+  end
+  P->>P: Write to motor_certificate_period (system of record)
+      </div></div>
+      <p class="caption"><b>Figure A.3</b> The three DMVIC calls behind every certificate, from <code>external_apis/dmvic/client.py</code> &mdash; the double-insurance check always runs first, and the certificate URL is fetched separately whenever DMVIC omits it from the issue response</p>
+
+      <div class="diagram"><div class="mermaid">
+sequenceDiagram
+  participant C as Client
+  participant P as Portal engine
+  participant MW as M-Pesa (middleware)
+  participant SC as Safaricom
+  P->>MW: POST .../stk-push-request {amount (server-resolved), phone, account ref}
+  MW->>SC: Initiates the STK prompt
+  SC->>C: Payment prompt pops up on the client's phone
+  C->>SC: Client enters their M-Pesa PIN
+  SC->>P: Inbound callback &mdash; POST /safaricom/confirmation
+  par Fallback if the callback is ever missed
+    P->>MW: POST .../stk-push-status (poll)
+  and Safety net
+    Note over P: stk_push_sweep job re-checks<br/>stuck "pending" rows every 15 minutes
+  end
+  P->>P: Record the PaymentTransaction, then run Figure 5.4
+      </div></div>
+      <p class="caption"><b>Figure A.4</b> How an M-Pesa STK payment actually reaches the portal &mdash; Safaricom calls back to <code>/safaricom/confirmation</code> directly; the status poll and the 15-minute sweep in <code>mpesa/sweep.py</code> exist only to catch a callback that never arrives</p>
+
+      <div class="diagram"><div class="mermaid">
+sequenceDiagram
+  participant Agent
+  participant P as Portal engine
+  participant K as KRA (middleware)
+  Agent->>P: Enters the applicant's KRA PIN during Personal Accident KYC
+  P->>K: POST .../kra-pin-checker {kra_pin}
+  K-->>P: {PINDATA: {Name, TypeOfTaxpayer, StatusOfPIN}}
+  P->>P: Autofills the applicant's name field on the KYC form
+      </div></div>
+      <p class="caption"><b>Figure A.5</b> The one KRA call the portal makes, from <code>services/external/kra.service.ts</code> and <code>external_apis/kra/client.py</code> &mdash; the response's <code>PINDATA.Name</code> is what fills the name field automatically</p>
 
       <h3 id="sA-3"><span class="n">A.3</span>External via the Flip valuation gateway</h3>
       <p>Flip authenticates with a username/password login to obtain a bearer token, and separately requires an <code>x-api-key</code> header, issued by Flip support, on every single call. Our approved valuers are not hard-coded; they are fetched live from Flip's own masterdata endpoint and cached for one hour.</p>
